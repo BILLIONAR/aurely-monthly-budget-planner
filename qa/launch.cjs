@@ -3,8 +3,8 @@ const assert = require('node:assert/strict')
 const { readFileSync } = require('node:fs')
 const vm = require('node:vm')
 
-function opening(reduced = false, name = 'Alex', storageFails = false) {
-  const nodes = new Map(), timers = new Map(), session = new Map(); let timerId = 0
+function opening(reduced = false, name = 'Alex', storageFails = false, session = new Map()) {
+  const nodes = new Map(), timers = new Map(); let timerId = 0
   const document = { querySelector: selector => node(selector), querySelectorAll: () => [] }
   function node(id) {
     if (!nodes.has(id)) {
@@ -28,8 +28,8 @@ function opening(reduced = false, name = 'Alex', storageFails = false) {
 
 test('Normal opening ends automatically and does not change financial data', () => {
   const {api,node,run,timers}=opening(); const before=JSON.stringify(api.state)
-  api.playLaunch(); assert.equal(node('#appShell').inert,true); assert.ok([...timers.values()].some(t=>t.ms===4200))
-  run(4200); run(520); assert.equal(node('#launchScreen').hidden,true); assert.equal(node('#appShell').inert,false)
+  api.playLaunch(); assert.equal(node('#appShell').inert,true); assert.ok([...timers.values()].some(t=>t.ms===4000))
+  run(4000); run(520); assert.equal(node('#launchScreen').hidden,true); assert.equal(node('#appShell').inert,false)
   assert.equal(JSON.stringify(api.state),before)
   api.playLaunch(); assert.equal(node('#launchScreen').hidden,true)
 })
@@ -67,7 +67,7 @@ test('A saved nickname personalizes the next animated opening without changing b
   api.playLaunch(); assert.equal(api.storeWelcomeName('  Alex  '),''); api.playLaunch(false,true)
   assert.equal(JSON.stringify(api.state),before); assert.equal(node('#welcomeNameForm').hidden,true)
   assert.match(node('#launchGreeting').textContent,/Welcome, Alex/)
-  assert.ok([...timers.values()].some(t=>t.ms===4200)); run(4200)
+  assert.ok([...timers.values()].some(t=>t.ms===4000)); run(4000)
   assert.equal(document.activeElement,node('#replayLaunch'))
 })
 test('Blank or overlong names cannot replace a saved name', () => {
@@ -84,4 +84,23 @@ test('Reduced motion still asks for a name, then enters without decorative motio
   api.playLaunch(); assert.equal(node('#welcomeNameForm').hidden,false)
   api.storeWelcomeName('Sam'); api.playLaunch(false,true)
   assert.equal(node('#launchScreen').hidden,true); assert.equal(timers.size,0)
+})
+test('A fresh page welcomes a known name again, even in the same previously-seen browser session', () => {
+  const session=new Map([['aurely-monthly-budget-launch-seen-v1','yes']])
+  for(let visit=0;visit<2;visit++) {
+    const {api,node,run}=opening(false,'Alex',false,session)
+    const before=JSON.stringify(api.state)
+    api.playLaunch();assert.equal(node('#launchScreen').hidden,false)
+    assert.equal(node('#welcomeNameForm').hidden,true)
+    assert.match(node('#launchGreeting').textContent,/Welcome, Alex/)
+    run(4000);run(520);assert.equal(node('#launchScreen').hidden,true)
+    assert.equal(JSON.stringify(api.state),before)
+  }
+})
+test('Normal startup selects Today; section navigation never calls the opening', () => {
+  const source=readFileSync(require.resolve('../app.js'),'utf8')
+  const startup=source.slice(source.indexOf('  const initialHash ='))
+  assert.match(startup,/switchView\('today', initialHash === '#screen-opening'\)/)
+  const navigation=source.slice(source.indexOf('  const switchView ='),source.indexOf('  const switchView =')+1500)
+  assert.doesNotMatch(navigation,/playLaunch\(/)
 })

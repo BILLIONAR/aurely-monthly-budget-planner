@@ -5,7 +5,7 @@ const assert=require('node:assert/strict')
 function api(){
  const source=readFileSync(require.resolve('../app.js'),'utf8'); const end=source.indexOf('  const financeUI = createFinanceUI(')
  const scope={BudgetFinance:require('../finance.js'),Intl,Date,console,localStorage:{getItem:()=>null},document:{querySelector:()=>({}),querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},setTimeout(){},setInterval(){},matchMedia:()=>({matches:true})}
- vm.runInNewContext(source.slice(0,end)+'globalThis.qa={set state(s){state=mergeState(s)},blankState,insightSnapshot,insightRows,remaining,sixMonthActivity};})()',scope)
+ vm.runInNewContext(source.slice(0,end)+'globalThis.qa={set state(s){state=mergeState(s)},blankState,insightSnapshot,insightRows,remaining,sixMonthActivity,monthStatistics,statisticsCard};})()',scope)
  return scope.qa
 }
 test('Visual overview reconciles with the plan without counting reservations or charges twice',()=>{
@@ -36,4 +36,16 @@ test('Retired XP cannot return through defaults or saved-state normalization',()
  const a=api();assert.ok(!('game' in a.blankState()))
  const source=readFileSync(require.resolve('../app.js'),'utf8');const html=readFileSync(require.resolve('../index.html'),'utf8')
  assert.ok(source.includes('delete merged.game'));assert.ok(!source.includes('state.game'));assert.ok(!html.includes('id="levelBadge"'));assert.ok(!html.includes('id="xpBar"'))
+})
+test('Monthly statistics are dated, cent-rounded and recalculate after edits and deletes',()=>{
+ const a=api(),s=a.blankState();s.expenses=[{id:'a',date:'2026-09-01',amount:10.1,category:'Food'},{id:'b',date:'2026-09-01',amount:20.2,category:'Food'},{id:'c',date:'2026-09-02',amount:9.7,category:'Travel'},{id:'d',date:'2026-10-01',amount:900,category:'Other'}];s.bills=[{id:'b',name:'Rent',amount:100,due:1,paidMonths:{'2026-09':true}},{id:'c',name:'Phone',amount:20,due:15,paidMonths:{}}];a.state=s
+ const v=a.monthStatistics('2026-09');assert.equal(v.total,40);assert.equal(v.average,20);assert.equal(v.largest,20.2);assert.equal(v.count,3);assert.equal(v.loggedDays,2);assert.equal(v.categories[0].amount,30.3);assert.equal(v.bills.paid,100);assert.equal(v.bills.open,20);assert.equal(a.monthStatistics('2026-10').bills.paid,0)
+ s.expenses[0].amount=20.1;s.expenses.splice(1,1);a.state=s;assert.equal(a.monthStatistics('2026-09').total,29.8)
+})
+test('Statistics have honest empty states, escape categories and hide all monetary chart values',()=>{
+ const a=api(),s=a.blankState();a.state=s;assert.equal(a.monthStatistics('2026-09').average,0);assert.match(a.statisticsCard('2026-09'),/Add a spending entry/)
+ s.expenses=[{id:'x',date:'2026-09-01',amount:123.45,category:'<img src=x onerror=alert(1)>'}];s.privateMode=true;a.state=s;const html=a.statisticsCard('2026-09');assert.ok(!html.includes('<img'));assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('123.45'));assert.match(html,/width:0%/);assert.match(html,/Hidden/)
+})
+test('Donut uses a square spacer and an absolute inset, not percentage-height children',()=>{
+ const css=readFileSync(require.resolve('../styles.css'),'utf8');assert.match(css,/\.flow-ring::before\s*\{[^}]*padding-bottom:100%/);const inner=css.match(/\.flow-ring > div\s*\{([^}]+)\}/)[1];assert.match(inner,/position:absolute/);assert.match(inner,/inset:17px/);assert.ok(!inner.includes('height:100%'))
 })
