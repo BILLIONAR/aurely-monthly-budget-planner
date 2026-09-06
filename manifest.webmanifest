@@ -1,0 +1,37 @@
+{
+  "name": "AurelyStudio Monthly Budget Planner",
+  "short_name": "Aurely Budget",
+  "description": "A calm, undated, local-first monthly budget workspace.",
+  "start_url": "./#screen-today",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f2e9",
+  "theme_color": "#397382",
+  "orientation": "any",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "assets/aurely-logo.svg?v=29",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "url": "./#screen-today"
+    },
+    {
+      "name": "Month",
+      "short_name": "Month",
+      "url": "./#screen-month"
+    },
+    {
+      "name": "Bills",
+      "short_name": "Bills",
+      "url": "./#screen-bills"
+    }
+  ]
+}
