@@ -233,7 +233,7 @@
     if (!needsName && !afterWelcome && !force && launchWasSeen()) { closeLaunch(true); return }
     const reduced = state.theme.calmMode || matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!needsName && reduced && !force) { closeLaunch(true); return }
-    const duration = 2800
+    const duration = 4000
     if (!launchScreen.contains(document.activeElement)) launchReturnFocus = document.activeElement !== document.body ? document.activeElement : null
     launchScreen.hidden = false; launchScreen.inert = false; launchScreen.classList.toggle('launch-calm', reduced); launchScreen.classList.remove('leaving', 'playing'); document.body.classList.add('launching'); appShell.inert = true; appShell.setAttribute('aria-hidden', 'true'); $('#launchStatus').textContent = force ? 'Take your time. Enter whenever you’re ready.' : 'Your planner is ready.'
     $('#launchDate').textContent = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }); $('#launchDate').setAttribute('datetime', dateKey(new Date()))
@@ -335,6 +335,29 @@
     const goal = group === 'savings'
     return (goal?state.goals:state.debts).flatMap(account => (goal?account.contributions:account.history).filter(row=>row.date.startsWith(key) && (!goal || account.keepOut !== false) && BudgetFinance.cash(row,goal?'goal':'debt')!==0).map(row=>({date:row.date,label:account.name,detail:row.note || (goal?'Savings transfer':'Debt payment'),amount:BudgetFinance.cash(row,goal?'goal':'debt')})))
   }
+  const monthStatistics = key => {
+    const round = BudgetFinance.round
+    const entries = expensesFor(key)
+    const categories = new Map()
+    entries.forEach(row => { const name = row.category || 'Other'; categories.set(name, round((categories.get(name) || 0) + num(row.amount))) })
+    const total = round(entries.reduce((sum,row) => sum + num(row.amount),0))
+    const loggedDays = new Set(entries.map(row => row.date)).size
+    const bills = billsFor(key)
+    const paid = round(bills.filter(row=>row.paid).reduce((sum,row)=>sum+num(row.amount),0))
+    const open = round(bills.filter(row=>!row.paid).reduce((sum,row)=>sum+num(row.amount),0))
+    return { total, count:entries.length, loggedDays, average:loggedDays ? round(total/loggedDays) : 0,
+      largest:Math.max(0,...entries.map(row=>num(row.amount))),
+      categories:[...categories].map(([name,amount])=>({name,amount,share:total?amount/total*100:0})).sort((a,b)=>b.amount-a.amount||a.name.localeCompare(b.name)),
+      bills:{paid,open,total:round(paid+open),count:bills.length,paidCount:bills.filter(row=>row.paid).length} }
+  }
+  const statisticsCard = key => {
+    const stats = monthStatistics(key); const bill = stats.bills
+    const percent = value => state.privateMode ? 'Hidden' : `${Math.round(value)}%`
+    return `<article class="paper-card statistics-card"><div class="card-heading"><div><span class="eyebrow">MONTHLY STATISTICS</span><h2>Spending & bill progress</h2></div><span class="insight-period">${esc(readableDate(key+'-01',{month:'long',year:'numeric'}))}</span></div>
+      <dl class="statistics-metrics"><div><dt>Spending entries</dt><dd>${stats.count}</dd></div><div><dt>Average per logged day</dt><dd class="money">${masked(stats.average)}</dd></div><div><dt>Largest spending entry</dt><dd class="money">${masked(stats.largest)}</dd></div></dl>
+      <div class="statistics-columns"><section><h3>Spending by category</h3><p>${stats.loggedDays} logged ${stats.loggedDays===1?'day':'days'} · spending logs only, not bills or transfers.</p><div class="statistics-categories">${stats.categories.length?stats.categories.map(row=>`<div class="statistics-category"><div><span>${esc(row.name)}</span><strong class="money">${masked(row.amount)} <small>${percent(row.share)}</small></strong></div><span class="statistics-track" aria-hidden="true"><i style="width:${state.privateMode?0:row.share}%"></i></span></div>`).join(''):'<p class="empty-copy">Add a spending entry to see your category breakdown.</p>'}</div></section>
+      <section><h3>Bills marked paid</h3><p>${bill.paidCount} of ${bill.count} bills marked paid for this month.</p><div class="statistics-bill-value money">${masked(bill.paid)} <small>of ${masked(bill.total)}</small></div><span class="statistics-track bill-progress" aria-hidden="true"><i style="width:${state.privateMode||!bill.total?0:bill.paid/bill.total*100}%"></i></span><p>${bill.total?`${percent(bill.paid/bill.total*100)} of bill amounts marked paid`:'No bill amounts to show yet.'}</p><div class="statistics-open"><span>Still open</span><strong class="money">${masked(bill.open)}</strong></div><button type="button" class="ghost-button small-button" data-insight-open="bills" data-insight-month="${key}">Review bills →</button><p class="statistics-note">Based on your paid checkmarks, not bank confirmation.</p></section></div></article>`
+  }
   const renderInsights = (selector,key) => {
     const host = $(selector); if (!host) return
     const data=insightSnapshot(key); const chosen=insightSelection[selector] || 'spending'
@@ -350,7 +373,7 @@
       <div class="flow-totals"><div><small>Planned income</small><strong class="money">${masked(data.income)}</strong></div><div><small>Used / committed</small><strong class="money">${masked(data.used)}</strong></div><div><small>${data.left<0?'Over plan':'Plan left'}</small><strong class="money">${masked(Math.abs(data.left))}</strong></div></div>
       <details class="insight-method"><summary>What is included?</summary><p>All bills for this month (paid or unpaid), logged spending, debt payments and net savings set aside. Scheduled and forecast income may not have arrived. Savings returns offset deposits; excess returns add ${masked(data.returned)} to the plan. Borrowing, savings purchases and balance corrections are not counted twice. This is your plan, not a bank balance.</p></details>
       <details class="insight-records" ${insightSelection[selector]?'open':''}><summary>${data.groups.find(row=>row.id===chosen).label} · ${rows.length} records</summary><div>${rows.length?rows.map(row=>`<div class="insight-record"><span><strong>${esc(row.label)}</strong><small>${esc(readableDate(row.date))} · ${esc(row.detail)}</small></span><b class="money">${masked(row.amount)}</b></div>`).join(''):'<p class="empty-copy">No records here yet. Your chart grows as you add them.</p>'}</div><button type="button" class="ghost-button small-button" data-insight-open="${data.groups.find(row=>row.id===chosen).view}" data-insight-month="${key}">Open ${chosen==='spending'?'Planner':chosen==='savings'?'Goals':chosen==='debt'?'Debt':'Bills'} →</button></details></article>
-      <article class="paper-card rhythm-card"><div class="card-heading"><div><span class="eyebrow">EVERY DAY TELLS A LITTLE STORY</span><h2>Your spending rhythm</h2></div><strong class="money">${masked(spentTotal(key))}</strong></div><p>${spendingDays?`${spendingDays} ${spendingDays===1?'day':'days'} with spending entries.`:'No spending logged yet.'} Select a day to open its journal.</p>
+      ${statisticsCard(key)}<article class="paper-card rhythm-card"><div class="card-heading"><div><span class="eyebrow">EVERY DAY TELLS A LITTLE STORY</span><h2>Your spending rhythm</h2></div><strong class="money">${masked(spentTotal(key))}</strong></div><p>${spendingDays?`${spendingDays} ${spendingDays===1?'day':'days'} with spending entries.`:'No spending logged yet.'} Select a day to open its journal.</p>
       <div class="rhythm-scroll" tabindex="0" aria-label="Daily spending chart. Scroll horizontally for all dates."><div class="rhythm-bars">${data.days.map(row=>`<button type="button" class="rhythm-day${row.date===currentDate?' is-today':''}" data-insight-day="${row.date}" aria-label="${esc(readableDate(row.date,{month:'long',day:'numeric',year:'numeric'}))}: ${masked(row.amount)}, ${row.count} ${row.count===1?'entry':'entries'}"><span class="rhythm-track"><i style="height:${state.privateMode?0:row.amount/max*100}%"></i></span><small>${Number(row.date.slice(-2))}</small></button>`).join('')}</div></div><div class="rhythm-caption"><span>${esc(readableDate(key+'-01',{month:'short'}))} 1</span><span>Daily logged spending · tap to explore</span><span>${daysInMonth(key)}</span></div>
       <details class="insight-records"><summary>View daily amounts as a table</summary><div class="insight-table"><table><thead><tr><th>Date</th><th>Entries</th><th>Spending</th></tr></thead><tbody>${data.days.map(row=>`<tr><td>${esc(readableDate(row.date))}</td><td>${row.count}</td><td class="money">${masked(row.amount)}</td></tr>`).join('')}</tbody></table></div></details></article>${selector==='#monthInsights'?trendChart(key):''}`
   }

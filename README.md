@@ -37,7 +37,7 @@ The linked demo was reviewed as a live product-flow reference. Its useful intera
 - Category envelopes with cap, used, left, over-cap, and unassigned views
 - Permanent data-derived milestones
 - Edit, remove, and five-second Undo patterns on key registers
-- Game-style daily quest deck with persistent XP, levels, one-time daily rewards, and calm-mode-aware celebrations
+- Data-derived daily next steps; permanent XP and levels have been removed
 - Separate dated monthly notes with edit/delete/Undo, preserved drafts and dated daily intentions
 - Privacy display mode
 - Theme Studio with presets, independent color controls, interface and heading fonts, five handwriting choices, coverage options, Night Mode, and Extra Calm Mode
