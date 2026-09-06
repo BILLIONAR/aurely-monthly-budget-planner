@@ -19,7 +19,7 @@ function opening(reduced = false, name = 'Alex', storageFails = false) {
   const scope = { document, BudgetFinance:require('../finance.js'), Date, Intl, console,
     localStorage:{getItem:()=>null,setItem(){if(storageFails)throw Error('Storage unavailable')}}, sessionStorage:{getItem:key=>session.get(key),setItem:(key,value)=>session.set(key,value)},
     matchMedia:()=>({matches:reduced}),setTimeout:(fn,ms)=>{timers.set(++timerId,{fn,ms});return timerId},clearTimeout:id=>timers.delete(id),requestAnimationFrame:fn=>fn() }
-  const source = readFileSync(require.resolve('../app.js'),'utf8'); const boundary = source.indexOf('  const level =')
+  const source = readFileSync(require.resolve('../app.js'),'utf8'); const boundary = source.indexOf('  const questDone =')
   vm.runInNewContext(source.slice(0,boundary)+'globalThis.qa={playLaunch,closeLaunch,storeWelcomeName,state};})()',scope)
   scope.qa.state.profile.name = name
   const run = ms => { for (const [id,timer] of [...timers]) if(timer.ms===ms){timers.delete(id);timer.fn()} }

@@ -19,6 +19,21 @@ function harness(state) {
 }
 function state() { return F.migrate({ profile: {}, ui: {}, expenses: [], paydays: [{ id: 'pay', date: '2026-09-01', amount: 1000 }], goals: [{ id: 'g', name: 'Savings', saved: 100, contributions: [{ id: 'd', date: '2026-09-01', type: 'deposit', amount: 50, paycheckId: 'pay' }] }], debts: [] }) }
 
+test('Balance journeys use ordered ledger effects and preserve an undated opening',()=>{
+  const s=state(),h=harness(s),g=s.goals[0];g.contributions.push({id:'w',date:'2026-09-02',type:'withdrawal',amount:20})
+  const before=JSON.stringify(g),series=h.ui.balanceSeries(g,'goal');assert.equal(series[0].date,null);assert.equal(series[2].amount,130);assert.equal(JSON.stringify(g),before)
+  const d={openingBalance:300,history:[{id:'c',date:'2026-09-03',type:'charge',amount:50},{id:'p',date:'2026-09-01',type:'payment',amount:100}]}
+  const debt=h.ui.balanceSeries(d,'debt');assert.equal(debt[1].amount,200);assert.equal(debt[2].amount,250)
+})
+test('Paycheck visuals combine spent and remaining allowances exactly once',()=>{
+  const s=state(),h=harness(s);s.paycheckPlans.pay={savings:100,debt:200,other:150};s.expenses=[{id:'x',date:'2026-09-02',amount:30,paycheckId:'pay'}]
+  const p=F.plan(s,'pay'),v=h.ui.paycheckSegments(p);assert.equal(v.find(r=>r.label==='Savings').amount,100);assert.equal(v.find(r=>r.label==='Other').amount,150);assert.equal(v.reduce((sum,r)=>sum+r.amount,0),1000)
+  s.goals[0].contributions.push({id:'r',date:'2026-09-02',type:'return',amount:100,paycheckId:'pay'});const returned=h.ui.paycheckSegments(F.plan(s,'pay'));assert.ok(returned.every(r=>r.amount>=0))
+})
+test('Balance chart privacy suppresses line and point amounts without deleting records',()=>{
+  const s=state(),h=harness(s);s.privateMode=true;const html=h.ui.balanceChart(s.goals[0],'goal');assert.ok(html.includes('Balances hidden'));assert.ok(!html.includes('<circle'));assert.ok(!html.includes('class="balance-line"'));assert.equal(s.goals[0].contributions.length,1)
+})
+
 test('In-app deletion requires confirmation; delete and Undo update account and paycheck', () => {
   const s = state(); const h = harness(s)
   h.requestDelete('goal:g:d'); assert.equal(h.node('#deleteActivityDialog').open, true)
