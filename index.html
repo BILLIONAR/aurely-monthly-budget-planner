@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@500;600;700&family=Dancing+Script:wght@500;600&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700&family=Nunito+Sans:wght@400;600;700;800&family=Patrick+Hand&family=Sacramento&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=34">
 </head>
 <body>
   <div class="launch-screen" id="launchScreen" role="dialog" aria-modal="true" aria-labelledby="launchTitle">
@@ -129,19 +129,12 @@
       <header class="topbar">
         <button class="icon-button mobile-menu" id="menuButton" aria-label="Open navigation" type="button">☰</button>
         <div class="topbar-title">
-          <span id="activeViewIcon">▦</span>
+          <span id="activeViewIcon">◌</span>
           <div>
             <small>MY MONEY SPACE</small>
-            <strong id="activeViewLabel">Month</strong>
+            <strong id="activeViewLabel">Today</strong>
           </div>
         </div>
-        <section class="player-hud" aria-label="Planner game progress">
-          <span class="level-orb" id="levelBadge">2</span>
-          <div class="hud-copy">
-            <div class="hud-title"><strong id="levelName">Budget Scout</strong><small id="xpText">20 / 100 XP</small></div>
-            <span class="xp-track" aria-hidden="true"><i id="xpBar"></i></span>
-          </div>
-        </section>
         <div class="topbar-actions">
           <button class="ghost-button utility-button" id="helpButton" type="button" aria-pressed="true"><b>?</b><span>Help</span></button>
           <button class="ghost-button utility-button" id="focusButton" type="button" aria-pressed="false"><b>◉</b><span>Focus</span></button>
@@ -195,9 +188,9 @@
             <div class="quest-board-head">
               <div class="quest-board-title">
                 <span class="quest-emblem" aria-hidden="true">✦</span>
-                <div><span class="eyebrow">DAILY QUEST DECK</span><h2 id="questHeading">Build today’s momentum</h2></div>
+                <div><span class="eyebrow">THREE SMALL STEPS</span><h2 id="questHeading">A simple check-in</h2></div>
               </div>
-              <div class="quest-score"><strong id="questProgress">0 / 3</strong><span>quests cleared</span></div>
+              <div class="quest-score"><strong id="questProgress">0 / 3</strong><span>steps checked</span></div>
             </div>
             <div class="quest-list" id="dailyQuestList"></div>
           </section>
@@ -301,7 +294,7 @@
               <button class="light-button" id="todayLogButton" type="button">Log an exact amount <span>＋</span></button>
             </article>
             <article class="paper-card today-quests-card">
-              <div class="card-heading"><div><span class="eyebrow">THREE SMALL THINGS</span><h2>Today’s quest path</h2></div><strong id="todayQuestScore">0 / 3</strong></div>
+              <div class="card-heading"><div><span class="eyebrow">THREE SMALL THINGS</span><h2>Your next small steps</h2></div><strong id="todayQuestScore">0 / 3</strong></div>
               <div class="mini-quest-list" id="todayQuestList"></div>
             </article>
             <section id="todayInsights" class="money-insights" aria-label="Current month visual overview"></section>
@@ -538,7 +531,7 @@
               <div class="card-heading"><div><span class="eyebrow">MAKE IT YOURS</span><h2>Identity & money basics</h2></div><span class="saved-pill">saved as you type</span></div>
               <div class="settings-form-grid">
                 <label><span>Your preferred name</span><input id="profileName" maxlength="32" placeholder="Alex"><small>Stored only in this browser and included in backups.</small></label>
-                <label><span>Your planner title</span><input id="plannerTitle" maxlength="44" placeholder="My money quest"></label>
+                <label><span>Your planner title</span><input id="plannerTitle" maxlength="44" placeholder="My money plan"></label>
                 <label><span>In checking right now</span><input id="checkingBalance" type="number" min="0" step="0.01"><small>Type it from your bank. This planner never connects to it.</small></label>
                 <label><span>Already set aside</span><input id="setAside" type="number" min="0" step="0.01"></label>
                 <label><span>Your usual paycheck</span><input id="usualPaycheck" type="number" min="0" step="0.01"><small>Rough is fine. It shapes forecasts only.</small></label>
@@ -691,13 +684,12 @@
     <article class="dialog-shell"><button class="dialog-close" id="closeHelp" aria-label="Close help" type="button">×</button><span class="eyebrow">PLANNER HELP</span><h2 id="helpTitle">A little context</h2><p id="helpText">Help appears here.</p><button class="primary-button" id="helpDone" type="button">Got it</button></article>
   </dialog>
 
-  <div class="celebration-layer" id="celebrationLayer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button id="toastAction" type="button" hidden>Undo</button></div>
   <style id="printPageSize" media="print"></style>
   <script src="finance.js?v=29"></script>
   <script src="finance-report.js?v=29"></script>
-  <script src="finance-ui.js?v=29"></script>
+  <script src="finance-ui.js?v=34"></script>
   <script src="english-dates.js?v=29"></script>
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>

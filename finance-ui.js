@@ -1,5 +1,5 @@
 /* Paycheck planning and dated savings/debt activity; shares the app's existing state. */
-window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid, today, switchView, toast, award, openExpense }) {
+window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid, today, switchView, toast, openExpense }) {
   const F = BudgetFinance
   const $ = selector => document.querySelector(selector)
   const state = getState
@@ -8,6 +8,34 @@ window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid,
   const payOptions = selected => '<option value="">Not linked to a paycheck</option>' + [...state().paydays].sort((a, b) => b.date.localeCompare(a.date)).map(row => `<option value="${esc(row.id)}"${row.id === selected ? ' selected' : ''}>${esc(label(row))}</option>`).join('')
   const names = { deposit: 'Add money', withdrawal: 'Withdraw money', return: 'Return to budget', payment: 'Add payment', charge: 'Add debt / charge', adjustment: 'Balance correction' }
   const accountFor = (kind, id) => (kind === 'goal' ? state().goals : state().debts).find(row => row.id === id)
+  const balanceSeries = (account, kind) => {
+    let amount = F.opening(account, kind)
+    return [{date:null,amount,id:null}, ...F.ordered(F.rows(account,kind)).map(row => {
+      amount = F.round(amount + F.effect(row,kind))
+      return {date:row.date,amount,id:row.id}
+    })]
+  }
+  const balanceChart = (account, kind) => {
+    const full = balanceSeries(account,kind), points = full.slice(-30)
+    const privateMode = state().privateMode
+    const max = Math.max(1,...points.map(row=>row.amount))
+    const coordinates = points.map((row,i)=>({ ...row, x:16+i/Math.max(1,points.length-1)*468, y:privateMode?142:142-row.amount/max*116 }))
+    const path = coordinates.map((p,i)=>(i?'L':'M')+p.x.toFixed(2)+','+p.y.toFixed(2)).join(' ')
+    const last=points[points.length-1], change=F.round(last.amount-full[0].amount)
+    const latest = last.id ? `<button type="button" class="chart-text-button" data-activity-edit="${kind}:${account.id}:${last.id}">Review latest transaction →</button>` : '<span>Add a transaction to start your timeline.</span>'
+    return `<section class="balance-visual ${kind==='debt'?'balance-debt':''}" aria-label="${esc(account.name)} balance history"><div class="visual-heading"><span>BALANCE JOURNEY</span><strong class="money">${privateMode?'••••':(change<0?'−':'+')+money(Math.abs(change))}</strong></div><p>Change from opening balance · ${full.length-1} ${full.length===2?'transaction':'transactions'}</p><svg viewBox="0 0 500 166" role="img" aria-label="${privateMode?'Balances hidden':esc(account.name)+' balance by transaction, not evenly spaced calendar dates. Full values are in Transaction history.'}"><path class="chart-gridline" d="M16 26H484 M16 84H484 M16 142H484"/>${!privateMode?`<path class="balance-area" d="${path} L${coordinates[coordinates.length-1].x} 142 L16 142Z"/><path class="balance-line" d="${path}"/>${coordinates.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3.5"><title>${p.date||'Opening (undated)'} · ${money(p.amount)}</title></circle>`).join('')}`:''}</svg><div class="visual-caption"><span>${points[0].date||'Opening · undated'}</span><span>${last.date||'No dated activity yet'}</span></div><div class="balance-visual-footer">${latest}<small>By transaction${full.length>30?' · last 30 balances':''}</small></div></section>`
+  }
+  const paycheckSegments = p => [
+    {label:'Bills',amount:p.buckets.bills,color:'#d89077'},
+    {label:'Debt',amount:F.round(p.actual.debt+p.pending.debt),color:'#c6a150'},
+    {label:'Savings',amount:Math.max(0,F.round(p.actual.savings+p.pending.savings)),color:'#70aa90'},
+    {label:'Other',amount:F.round(p.actual.expenses+p.pending.other),color:'var(--main)'},
+    {label:'Left',amount:Math.max(0,p.remaining),color:'var(--line)'}
+  ]
+  const paycheckVisual = p => {
+    const segments=paycheckSegments(p), total=segments.reduce((sum,row)=>sum+row.amount,0)
+    return `<section class="paycheck-visual" aria-label="Paycheck allocation chart"><div class="visual-heading"><span>YOUR PAYCHECK, DIVIDED</span><span>${p.remaining<0?'Overallocated · review your plan':'Every part has a place'}</span></div><div class="paycheck-stack" role="img" aria-label="Allocation including unspent allowances; exact amounts follow.">${state().privateMode||!total?'<i style="width:100%;background:var(--line)"></i>':segments.filter(row=>row.amount>0).map(row=>`<i style="width:${row.amount/total*100}%;background:${row.color}" title="${row.label}: ${money(row.amount)}"></i>`).join('')}</div><div class="paycheck-visual-key">${segments.map(row=>`<div><span><i style="background:${row.color}"></i>${row.label}</span><strong class="money">${money(row.amount)}</strong></div>`).join('')}</div><p class="finance-hint">Includes recorded activity and still-reserved allowances. Savings returns can release money back to this paycheck.</p></section>`
+  }
   const buttons = (account, kind) => `<div class="finance-actions">${(kind === 'goal' ? ['deposit', 'withdrawal', 'return', 'adjustment'] : ['payment', 'charge', 'adjustment']).map(type => `<button type="button" data-activity="${kind}:${account.id}:${type}">${names[type]}</button>`).join('')}<button type="button" data-account-edit="${kind}:${account.id}">Edit ${kind === 'goal' ? 'goal' : 'account'}</button></div>`
   const history = (account, kind) => {
     const list = F.ordered(F.rows(account, kind)); let running = F.opening(account, kind)
@@ -29,7 +57,7 @@ window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid,
     return '<dl class="account-metrics">' + values.map(([name, value]) => '<div><dt>' + name + '</dt><dd class="money">' + value + '</dd></div>').join('') + '</dl>'
   }
 
-  const overview = p => `<section id="paycheckOverview" aria-label="Paycheck totals"><div class="paycheck-balance${p.remaining < 0 ? ' over-budget' : ''}" role="status"><span>${p.remaining < 0 ? 'Over budget' : 'Remaining'}<small>${esc(p.paycheck.name)} · ${esc(p.paycheck.date)}</small></span><strong class="money">${money(p.remaining)}</strong></div><dl class="paycheck-totals"><div><dt>Income</dt><dd class="money">${money(p.paycheck.amount)}</dd></div><div><dt>Used / assigned</dt><dd class="money">${money(p.used)}</dd></div><div><dt>Still reserved</dt><dd class="money">${money(p.reserved)}</dd></div><div><dt>Total used + reserved</dt><dd class="money">${money(p.total)}</dd></div></dl><p class="finance-hint">Remaining = income − used/assigned − still reserved. Assigned bills count even when unpaid. This is a plan, not a bank balance.</p><div class="paycheck-breakdown"><div><span>Bills assigned</span><b class="money">${money(p.buckets.bills)}</b></div><div><span>Spending recorded</span><b class="money">${money(p.actual.expenses)}</b></div><div><span>Debt payments recorded</span><b class="money">${money(p.actual.debt)}</b></div><div><span>Savings contributed, less returns</span><b class="money">${money(p.actual.savings)}</b></div></div><p class="finance-hint">Not yet used: debt ${money(p.pending.debt)} · savings ${money(p.pending.savings)} · other ${money(p.pending.other)}. Recorded transactions consume these allowances; they are not counted twice.</p></section>`
+  const overview = p => `<section id="paycheckOverview" aria-label="Paycheck totals"><div class="paycheck-balance${p.remaining < 0 ? ' over-budget' : ''}" role="status"><span>${p.remaining < 0 ? 'Over budget' : 'Remaining'}<small>${esc(p.paycheck.name)} · ${esc(p.paycheck.date)}</small></span><strong class="money">${money(p.remaining)}</strong></div>${paycheckVisual(p)}<details class="visual-details"><summary>How this paycheck is calculated</summary><dl class="paycheck-totals"><div><dt>Income</dt><dd class="money">${money(p.paycheck.amount)}</dd></div><div><dt>Used / assigned</dt><dd class="money">${money(p.used)}</dd></div><div><dt>Still reserved</dt><dd class="money">${money(p.reserved)}</dd></div><div><dt>Total used + reserved</dt><dd class="money">${money(p.total)}</dd></div></dl><p class="finance-hint">Remaining = income − used/assigned − still reserved. Assigned bills count even when unpaid. This is a plan, not a bank balance.</p><div class="paycheck-breakdown"><div><span>Bills assigned</span><b class="money">${money(p.buckets.bills)}</b></div><div><span>Spending recorded</span><b class="money">${money(p.actual.expenses)}</b></div><div><span>Debt payments recorded</span><b class="money">${money(p.actual.debt)}</b></div><div><span>Savings contributed, less returns</span><b class="money">${money(p.actual.savings)}</b></div></div><p class="finance-hint">Not yet used: debt ${money(p.pending.debt)} · savings ${money(p.pending.savings)} · other ${money(p.pending.other)}. Recorded transactions consume these allowances; they are not counted twice.</p></details></section>`
   const paycheckActivity = p => `<section class="paycheck-activity"><div class="card-heading"><h3>Spending from this paycheck</h3><button class="primary-button" type="button" data-paycheck-spend="${esc(p.paycheck.id)}">+ Spending</button></div>${p.expenses.map(row => `<div class="plan-bill"><span><strong>${esc(row.note || row.category)}</strong><small>${esc(row.date)} · ${esc(row.category)}</small></span><b class="money">${money(row.amount)}</b><button type="button" data-expense-edit="${row.id}">Edit</button><button type="button" data-expense-remove="${row.id}">Delete</button></div>`).join('') || '<p class="finance-hint">No spending linked. Add one here or choose this paycheck when editing an existing expense.</p>'}<details><summary>Assign existing spending</summary>${state().expenses.filter(row => !row.paycheckId && row.date.startsWith(state().selectedMonth)).map(row => `<div class="plan-bill"><span><strong>${esc(row.note || row.category)}</strong><small>${esc(row.date)} · ${money(row.amount)}</small></span><button type="button" data-link-spending="${row.id}">Assign to this paycheck</button></div>`).join('') || '<p class="finance-hint">No unassigned spending in the browsed month.</p>'}</details><h3>Savings & debt activity</h3>${[...p.activity].sort((a,b) => b.date.localeCompare(a.date)).map(row => `<div class="plan-bill"><span><strong>${esc(row.accountName)} · ${esc(names[F.type(row, row.kind)])}</strong><small>${esc(row.date)}${row.note ? ' · ' + esc(row.note) : ''}</small></span><b class="money">${F.cash(row, row.kind) < 0 ? '−' : ''}${money(Math.abs(F.cash(row, row.kind)))}</b><button type="button" data-activity-edit="${row.kind}:${row.accountId}:${row.id}">Edit</button></div>`).join('') || '<p class="finance-hint">Link contributions and payments from their account cards.</p>'}<div class="finance-actions"><button type="button" data-go-view="goals">Open savings</button><button type="button" data-go-view="debt">Open debt</button></div></section>`
   const billOccurrence = (bill, month) => {
     const days = new Date(Number(month.slice(0, 4)), Number(month.slice(5)), 0).getDate()
@@ -156,7 +184,6 @@ window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid,
         if (type === 'adjustment' && row.amount === 0) throw Error('The balance is already this amount.')
         F.updateTransaction(account, kind, row, rowId)
         $('#activityDialog').close(); commit(rowId ? 'Transaction updated; all balances recalculated' : 'Transaction recorded')
-        if (!rowId && kind === 'goal' && type === 'deposit' && row.date === today()) award('goal', 20, 'Goal powered up')
       } catch (error) { $('#activityError').textContent = error.message }
     })
     $('#accountEditForm').addEventListener('submit', event => {
@@ -168,5 +195,5 @@ window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid,
     })
   }
   const selectPaycheck = id => { if (state().paydays.some(row => row.id === id)) { selectedPaycheck = id; viewedMonth = state().selectedMonth; billMonth = viewedMonth } }
-  return { render, bind, buttons, history, openActivity, openEdit, accountSummary, payOptions, selectPaycheck }
+  return { render, bind, buttons, history, openActivity, openEdit, accountSummary, payOptions, selectPaycheck, balanceSeries, balanceChart, paycheckSegments, paycheckVisual }
 }
