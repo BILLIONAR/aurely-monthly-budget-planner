@@ -115,7 +115,8 @@
   let launchTimers = []
   let launchReturnFocus = null
   const moneyAnimations = new WeakMap()
-  const LAUNCH_SEEN_KEY = 'aurely-monthly-budget-launch-seen-v1'
+  // Page-local only: a reload/reopen gets a welcome, section changes do not.
+  let launchSeenOnPage = false
 
   const $ = (selector, root = document) => root.querySelector(selector)
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)]
@@ -200,8 +201,8 @@
     link.href = URL.createObjectURL(blob); link.download = filename; document.body.append(link); link.click(); link.remove()
     setTimeout(() => URL.revokeObjectURL(link.href), 1000)
   }
-  const launchWasSeen = () => { try { return sessionStorage.getItem(LAUNCH_SEEN_KEY) === 'yes' } catch { return false } }
-  const rememberLaunch = () => { try { sessionStorage.setItem(LAUNCH_SEEN_KEY, 'yes') } catch {} }
+  const launchWasSeen = () => launchSeenOnPage
+  const rememberLaunch = () => { launchSeenOnPage = true }
   const clearLaunchTimers = () => { launchTimers.forEach(clearTimeout); launchTimers = [] }
   const closeLaunch = (instant = false) => {
     clearLaunchTimers(); rememberLaunch(); document.body.classList.remove('launching')
@@ -232,7 +233,7 @@
     if (!needsName && !afterWelcome && !force && launchWasSeen()) { closeLaunch(true); return }
     const reduced = state.theme.calmMode || matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!needsName && reduced && !force) { closeLaunch(true); return }
-    const duration = 4200
+    const duration = 2800
     if (!launchScreen.contains(document.activeElement)) launchReturnFocus = document.activeElement !== document.body ? document.activeElement : null
     launchScreen.hidden = false; launchScreen.inert = false; launchScreen.classList.toggle('launch-calm', reduced); launchScreen.classList.remove('leaving', 'playing'); document.body.classList.add('launching'); appShell.inert = true; appShell.setAttribute('aria-hidden', 'true'); $('#launchStatus').textContent = force ? 'Take your time. Enter whenever you’re ready.' : 'Your planner is ready.'
     $('#launchDate').textContent = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }); $('#launchDate').setAttribute('datetime', dateKey(new Date()))
@@ -805,9 +806,8 @@
   EnglishDates.install()
   bindDelegatedEvents(); bindForms(); bindControls(); bindDataTools(); resetIncomeForm(); renderAll()
   const initialHash = location.hash
-  const requestedView = initialHash.startsWith('#settings-') ? 'settings' : initialHash.replace('#screen-', '')
-  switchView(VIEW_META[requestedView] ? requestedView : 'today', true)
-  if (initialHash.startsWith('#settings-')) setTimeout(() => document.querySelector(initialHash)?.scrollIntoView(), 0)
+  // A fresh visit starts on Today. In-app links still use the hashchange handler.
+  switchView('today', initialHash === '#screen-opening')
   playLaunch(initialHash === '#screen-opening')
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {})
 })()

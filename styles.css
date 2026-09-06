@@ -1206,8 +1206,10 @@ body.launching { overflow: hidden; }
 /* Direct sidebar navigation: every screen is one tap away. */
 .sidebar { height: 100dvh; }
 .sidebar > * { flex-shrink: 0; }
-.primary-nav { min-height: 0; flex-shrink: 1; overflow-y: auto; overflow-x: hidden; align-content: start; scrollbar-width: thin; padding: 3px; margin-inline: -3px; }
-.primary-nav .nav-button { min-height: 40px; }
+.primary-nav { min-height: 0; flex-shrink: 1; overflow-y: auto; overflow-x: hidden; align-content: start; grid-auto-rows: max-content; scrollbar-width: thin; padding: 3px; margin-inline: -3px; }
+.primary-nav .nav-button { min-height: 44px; grid-template-columns: 26px minmax(0,1fr) 18px; gap: 7px; padding-inline: 8px; font-size: .88rem; line-height: 1.3; }
+.primary-nav .nav-button > span:not(.nav-icon) { white-space: nowrap; }
+.primary-nav .nav-button small { text-align: right; }
 .sidebar-spacer { flex-shrink: 1; min-height: 10px; }
 @media (max-height: 580px) { .primary-nav { flex-shrink: 0; overflow: visible; }.sidebar { overflow-y: auto; } }
 @media (max-width: 680px) { .sidebar { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }.primary-nav { flex-shrink: 0; overflow: visible; }.primary-nav .nav-button { min-height: 44px; } }
