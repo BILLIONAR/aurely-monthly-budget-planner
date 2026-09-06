@@ -9,7 +9,7 @@
   const TAB_COLORS = ['#f39a8f', '#f4bc62', '#9fd2a7', '#72c9cf', '#f1cf59', '#f28d73', '#b39cdd', '#83afe2', '#78c29a', '#efa957', '#d98dae', '#69b5bd']
   const CATEGORIES = ['Groceries', 'Home', 'Transport', 'Eating out', 'Fun', 'Other']
   const VIEW_META = {
-    month: ['▦', 'Planner'], today: ['◌', 'Today'], bills: ['⌁', 'Bills'], income: ['↗', 'Money in'],
+    today: ['◌', 'Today'], month: ['▦', 'Planner'], bills: ['⌁', 'Bills'], income: ['↗', 'Money in'],
     goals: ['◎', 'Goals'], debt: ['↘', 'Debt'], envelopes: ['▱', 'Envelopes'], milestones: ['◇', 'Milestones'],
     theme: ['✦', 'Theme Studio'], settings: ['⚙', 'Settings'], help: ['?', 'How it works']
   }
@@ -106,7 +106,7 @@
   try { state = mergeState(JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')) } catch { state = mergeState(null) }
   // Focus is a deliberate session action; never reopen a mysteriously dimmed app.
   state.ui.focusMode = false
-  let activeView = 'month'
+  let activeView = 'today'
   let toastTimer
   let noteTimer
   let undoCallback = null
@@ -313,6 +313,51 @@
     const rows = CATEGORIES.map((category) => ({ category, amount: expensesFor(key).filter((item) => item.category === category).reduce((sum, item) => sum + num(item.amount), 0) })).filter((item) => item.amount > 0).sort((a, b) => b.amount - a.amount); const max = Math.max(1, ...rows.map((item) => item.amount))
     $(selector).innerHTML = rows.length ? rows.map((item) => `<div class="category-row"><div><span>${esc(item.category)}</span><strong class="money">${masked(item.amount)}</strong></div><i><b style="width:${item.amount / max * 100}%"></b></i></div>`).join('') : '<p class="empty-copy">Log spending to see a real category pattern.</p>'
   }
+  // Visuals share the planner's cash-flow rules. Reservations are not transactions.
+  const insightSelection = {}
+  const insightSnapshot = (key) => {
+    const round = BudgetFinance.round
+    const savings = goalDepositsFor(key)
+    const groups = [
+      { id:'bills', label:'Bills', amount:round(billTotal(key)), color:'#d89077', view:'bills' },
+      { id:'spending', label:'Spending', amount:round(spentTotal(key)), color:'var(--main)', view:'month' },
+      { id:'debt', label:'Debt payments', amount:round(debtPaymentsFor(key)), color:'#c6a150', view:'debt' },
+      { id:'savings', label:'Savings set aside', amount:Math.max(0,savings), color:'#70aa90', view:'goals' }
+    ]
+    const used = round(groups.reduce((sum,row) => sum+row.amount,0))
+    const income = round(incomeFor(key)); const returned = Math.max(0,-savings)
+    const left = round(income + returned - used)
+    const days = Array.from({length:daysInMonth(key)},(_,i) => {
+      const date = makeDate(key,i+1); const entries = expensesFor(key).filter(row => row.date === date)
+      return {date, amount:round(entries.reduce((sum,row)=>sum+num(row.amount),0)), count:entries.length}
+    })
+    return { key, groups, used, income, returned, left, days, total:round(used+Math.max(0,left)) }
+  }
+  const insightRows = (key, group) => {
+    if (group === 'bills') return billsFor(key).map(row=>({date:makeDate(key,row.due),label:row.name,detail:row.paid?'Paid bill':'Planned bill · unpaid',amount:row.amount}))
+    if (group === 'spending') return expensesFor(key).map(row=>({date:row.date,label:row.note||row.category,detail:row.category,amount:row.amount}))
+    const goal = group === 'savings'
+    return (goal?state.goals:state.debts).flatMap(account => (goal?account.contributions:account.history).filter(row=>row.date.startsWith(key) && (!goal || account.keepOut !== false) && BudgetFinance.cash(row,goal?'goal':'debt')!==0).map(row=>({date:row.date,label:account.name,detail:row.note || (goal?'Savings transfer':'Debt payment'),amount:BudgetFinance.cash(row,goal?'goal':'debt')})))
+  }
+  const renderInsights = (selector,key) => {
+    const host = $(selector); if (!host) return
+    const data=insightSnapshot(key); const chosen=insightSelection[selector] || 'spending'
+    const segments=[...data.groups,{id:'left',label:'Plan left',amount:Math.max(0,data.left),color:'var(--line)'}]
+    let position=0
+    const stops=segments.filter(row=>row.amount>0).map(row=>{const start=position;position+=row.amount/Math.max(1,data.total)*100;return `${row.color} ${start}% ${position}%`})
+    const gradient=(!state.privateMode && data.total>0)?`conic-gradient(${stops.join(',')})`:'var(--line)'
+    const rows=insightRows(key,chosen).sort((a,b)=>b.date.localeCompare(a.date))
+    const max=Math.max(1,...data.days.map(row=>row.amount)); const spendingDays=data.days.filter(row=>row.count).length
+    host.innerHTML=`<article class="paper-card flow-card"><div class="card-heading"><div><span class="eyebrow">YOUR MONEY, AT A GLANCE</span><h2>Your money, in perspective</h2></div><span class="insight-period">${esc(readableDate(key+'-01',{month:'long',year:'numeric'}))}</span></div>
+      <div class="flow-layout"><div class="flow-ring" style="--flow:${gradient}" role="img" aria-label="Monthly plan distribution. Exact amounts are listed beside the chart."><div><small>${data.left<0?'OVER PLAN':'PLAN LEFT'}</small><strong class="money">${masked(Math.abs(data.left))}</strong><span>${data.total?'after plans & activity':'Add your first record'}</span></div></div>
+      <div class="flow-legend"><p>Tap a category to see its records.</p>${data.groups.map(row=>`<button type="button" data-insight-group="${row.id}" data-insight-host="${selector}" aria-pressed="${chosen===row.id}"><i style="background:${row.color}" aria-hidden="true"></i><span>${row.label}</span><strong class="money">${masked(row.amount)}</strong><b aria-hidden="true">↗</b></button>`).join('')}</div></div>
+      <div class="flow-totals"><div><small>Planned income</small><strong class="money">${masked(data.income)}</strong></div><div><small>Used / committed</small><strong class="money">${masked(data.used)}</strong></div><div><small>${data.left<0?'Over plan':'Plan left'}</small><strong class="money">${masked(Math.abs(data.left))}</strong></div></div>
+      <details class="insight-method"><summary>What is included?</summary><p>All bills for this month (paid or unpaid), logged spending, debt payments and net savings set aside. Scheduled and forecast income may not have arrived. Savings returns offset deposits; excess returns add ${masked(data.returned)} to the plan. Borrowing, savings purchases and balance corrections are not counted twice. This is your plan, not a bank balance.</p></details>
+      <details class="insight-records" ${insightSelection[selector]?'open':''}><summary>${data.groups.find(row=>row.id===chosen).label} · ${rows.length} records</summary><div>${rows.length?rows.map(row=>`<div class="insight-record"><span><strong>${esc(row.label)}</strong><small>${esc(readableDate(row.date))} · ${esc(row.detail)}</small></span><b class="money">${masked(row.amount)}</b></div>`).join(''):'<p class="empty-copy">No records here yet. Your chart grows as you add them.</p>'}</div><button type="button" class="ghost-button small-button" data-insight-open="${data.groups.find(row=>row.id===chosen).view}" data-insight-month="${key}">Open ${chosen==='spending'?'Planner':chosen==='savings'?'Goals':chosen==='debt'?'Debt':'Bills'} →</button></details></article>
+      <article class="paper-card rhythm-card"><div class="card-heading"><div><span class="eyebrow">EVERY DAY TELLS A LITTLE STORY</span><h2>Your spending rhythm</h2></div><strong class="money">${masked(spentTotal(key))}</strong></div><p>${spendingDays?`${spendingDays} ${spendingDays===1?'day':'days'} with spending entries.`:'No spending logged yet.'} Select a day to open its journal.</p>
+      <div class="rhythm-scroll" tabindex="0" aria-label="Daily spending chart. Scroll horizontally for all dates."><div class="rhythm-bars">${data.days.map(row=>`<button type="button" class="rhythm-day${row.date===currentDate?' is-today':''}" data-insight-day="${row.date}" aria-label="${esc(readableDate(row.date,{month:'long',day:'numeric',year:'numeric'}))}: ${masked(row.amount)}, ${row.count} ${row.count===1?'entry':'entries'}"><span class="rhythm-track"><i style="height:${state.privateMode?0:row.amount/max*100}%"></i></span><small>${Number(row.date.slice(-2))}</small></button>`).join('')}</div></div><div class="rhythm-caption"><span>${esc(readableDate(key+'-01',{month:'short'}))} 1</span><span>Daily logged spending · tap to explore</span><span>${daysInMonth(key)}</span></div>
+      <details class="insight-records"><summary>View daily amounts as a table</summary><div class="insight-table"><table><thead><tr><th>Date</th><th>Entries</th><th>Spending</th></tr></thead><tbody>${data.days.map(row=>`<tr><td>${esc(readableDate(row.date))}</td><td>${row.count}</td><td class="money">${masked(row.amount)}</td></tr>`).join('')}</tbody></table></div></details></article>`
+  }
   const renderActivity = (selector, items) => {
     $(selector).innerHTML = items.length ? [...items].sort((a, b) => `${b.date}${b.time || ''}`.localeCompare(`${a.date}${a.time || ''}`)).map((item) => `<article class="activity-row"><span class="activity-mark">${esc(item.category.charAt(0) || '•')}</span><div><strong>${esc(item.note || item.category)}</strong><small>${readableDate(item.date)}${item.time ? ` · ${esc(item.time)}` : ''} · ${esc(item.category)}</small></div><b class="money">${masked(item.amount)}</b><div class="row-actions"><button type="button" data-expense-edit="${item.id}">Edit</button><button type="button" data-expense-remove="${item.id}" aria-label="Remove">×</button></div></article>`).join('') : '<p class="empty-copy">Nothing logged here yet.</p>'
   }
@@ -376,6 +421,7 @@
     $('#monthTitle').textContent = `${MONTHS[monthIndex]} ${year}`; $('#monthSubtitle').textContent = state.notes[state.selectedMonth] || state.monthNotes[state.selectedMonth]?.length ? 'Your notes and numbers are waiting exactly where you left them.' : 'A clear view of what is coming and what is still yours.'; $('#monthNote').value = editingMonthNote?.month === state.selectedMonth ? editingMonthNote.text : state.notes[state.selectedMonth] || ''; setAnimatedMoney('#glanceSpent', spentTotal())
     renderFilteredRegister(); renderBars('#monthCategoryBars'); renderCalendar()
     renderMonthNotes()
+    renderInsights('#monthInsights', state.selectedMonth)
     if (open.length) { $('#nextStepTitle').textContent = `${open[0].name} is the next open bill`; $('#nextStepText').textContent = `${money(open[0].amount)} · due day ${open[0].due}. One tap marks it paid.` } else if (!state.expenses.some((item) => item.date === currentDate)) { $('#nextStepTitle').textContent = 'Capture anything you spent today'; $('#nextStepText').textContent = 'A tiny update keeps the daily guide useful.' } else { $('#nextStepTitle').textContent = 'Your month is up to date'; $('#nextStepText').textContent = 'You can stop here. Return when something changes.' }
   }
   const renderMonthNotes = () => {
@@ -419,6 +465,7 @@
     $('#todayWeekStrip').innerHTML = Array.from({ length: 7 }, (_, index) => { const date = shiftDay(currentDate, index - 6); const data = dayJournal(date); return `<button type="button" data-journal-day="${date}" aria-label="View ${date} daily records" aria-pressed="${date === journalDate}"><small>${readableDate(date, { weekday: 'short' })}</small><strong>${parseDate(date).getDate()}</strong><span>${date === currentDate ? 'Today' : data.noSpend ? 'No spend' : data.entries.length ? data.entries.length + (data.entries.length === 1 ? ' entry' : ' entries') : '—'}</span></button>` }).join('')
     $('#noSpendButton').hidden = todayRows.length > 0; $('#noSpendButton').textContent = state.noSpendDays.includes(currentDate) ? '✓ No-spend day recorded · undo' : 'No spending today'; $('#noSpendButton').setAttribute('aria-pressed', String(state.noSpendDays.includes(currentDate)))
     renderDayJournal()
+    renderInsights('#todayInsights', currentMonth)
     $('#brainDumpList').innerHTML = state.brainDump.length ? state.brainDump.map((item) => `<div class="brain-item"><span>${esc(item.text)}</span><button type="button" data-brain-remove="${item.id}" aria-label="Remove thought">×</button></div>`).join('') : '<p class="empty-copy">Your head can stay quiet here.</p>'
     const upcoming = upcomingFor(); const timeline = list => list.map(item => `<button type="button" class="today-upcoming-row" data-upcoming-date="${item.date}" data-upcoming-view="${item.view}"><time>${readableDate(item.date, { month: 'short', day: 'numeric' })}</time><span><strong>${esc(item.label)}</strong><small>${item.kind}</small></span><b class="money">${masked(item.amount)}</b></button>`).join('')
     $('#todayUpcomingRange').textContent = `${readableDate(currentDate)} – ${readableDate(shiftDay(currentDate, 41), { month: 'short', day: 'numeric', year: 'numeric' })} · ${upcoming.length} scheduled items`
@@ -553,6 +600,12 @@
   const runCommand = (index = commandIndex) => { const item = commandItems[index]; if (item) { commandDialog.close(); item.action() } }
   const openCommand = () => { $('#commandInput').value = ''; commandIndex = 0; renderCommands(); commandDialog.showModal(); setTimeout(() => $('#commandInput').focus(), 30) }
   const bindDelegatedEvents = () => document.addEventListener('click', (event) => {
+    const insight = event.target.closest('[data-insight-group]')
+    if (insight) { const selector=insight.dataset.insightHost; insightSelection[selector]=insight.dataset.insightGroup; renderInsights(selector,selector==='#todayInsights'?currentMonth:state.selectedMonth); $(`${selector} [data-insight-group="${insight.dataset.insightGroup}"]`).focus() }
+    const insightDay = event.target.closest('[data-insight-day]')
+    if (insightDay) { journalDate=insightDay.dataset.insightDay; switchView('today'); renderDayJournal(); $('#today-journal').scrollIntoView({block:'start'}); $('#journalDate').focus({preventScroll:true}) }
+    const insightOpen = event.target.closest('[data-insight-open]')
+    if (insightOpen) { state.selectedMonth=insightOpen.dataset.insightMonth; state.selectedDate=state.selectedMonth+'-01'; save(); renderAll(); switchView(insightOpen.dataset.insightOpen) }
     const editNote = event.target.closest('[data-month-note-edit]'); if (editNote) { const note = (state.monthNotes[state.selectedMonth] || []).find(item => item.id === editNote.dataset.monthNoteEdit); if (note) { editingMonthNote = { id:note.id, month:state.selectedMonth, text:note.text }; $('#monthNote').value = note.text; renderMonthNotes(); $('#monthNote').focus() } }
     const removeNote = event.target.closest('[data-month-note-remove]'); if (removeNote) { editingMonthNote = null; removeWithUndo(state.monthNotes[state.selectedMonth] || [], removeNote.dataset.monthNoteRemove, 'Note') }
     const journalDay = event.target.closest('[data-journal-day]'); if (journalDay) { journalDate = journalDay.dataset.journalDay; renderDayJournal(); $('#today-journal').scrollIntoView({ block: 'start' }) }

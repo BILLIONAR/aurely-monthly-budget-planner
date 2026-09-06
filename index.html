@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@500;600;700&family=Dancing+Script:wght@500;600&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700&family=Nunito+Sans:wght@400;600;700;800&family=Patrick+Hand&family=Sacramento&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=30">
+  <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body>
   <div class="launch-screen" id="launchScreen" role="dialog" aria-modal="true" aria-labelledby="launchTitle">
@@ -74,11 +74,11 @@
 
       <div class="sidebar-label">Workspace</div>
       <nav class="primary-nav" aria-label="Planner sections">
-        <button class="nav-button active" data-view="month" type="button">
-          <span class="nav-icon" aria-hidden="true">▦</span><span>Planner</span><small>01</small>
+        <button class="nav-button active" data-view="today" type="button">
+          <span class="nav-icon" aria-hidden="true">◌</span><span>Today</span><small>01</small>
         </button>
-        <button class="nav-button" data-view="today" type="button">
-          <span class="nav-icon" aria-hidden="true">◌</span><span>Today</span><small>02</small>
+        <button class="nav-button" data-view="month" type="button">
+          <span class="nav-icon" aria-hidden="true">▦</span><span>Planner</span><small>02</small>
         </button>
         <button class="nav-button" data-view="bills" type="button">
           <span class="nav-icon" aria-hidden="true">⌁</span><span>Bills</span><small>03</small>
@@ -202,6 +202,7 @@
             <div class="quest-list" id="dailyQuestList"></div>
           </section>
 
+          <section id="monthInsights" class="money-insights" aria-label="Selected month visual overview"></section>
           <div class="month-workspace">
             <article class="paper-card calendar-card">
               <div class="card-heading">
@@ -303,6 +304,7 @@
               <div class="card-heading"><div><span class="eyebrow">THREE SMALL THINGS</span><h2>Today’s quest path</h2></div><strong id="todayQuestScore">0 / 3</strong></div>
               <div class="mini-quest-list" id="todayQuestList"></div>
             </article>
+            <section id="todayInsights" class="money-insights" aria-label="Current month visual overview"></section>
             <article class="paper-card weekly-review-card">
               <div class="card-heading"><div><span class="eyebrow">A LITTLE PERSPECTIVE</span><h2>Your last seven days</h2></div><small id="weekRange"></small></div>
               <div class="weekly-metrics"><span><small>Logged spending</small><strong class="money" id="weekTotal">$0</strong></span><span><small>Check-ins</small><strong id="weekCheckIns">0 / 7 days</strong></span><span><small>Largest category</small><strong id="weekTopCategory">—</strong></span></div>
@@ -334,7 +336,7 @@
               <details id="legacyIntention" hidden><summary>Earlier undated note</summary><p id="legacyIntentionText"></p></details>
             </article>
             <article class="paper-card today-insight-card">
-              <div class="card-heading"><div><span class="eyebrow">THE MONTH SO FAR</span><h2>Real activity, no invented chart</h2></div><strong class="money" id="todayMonthSpent">$0</strong></div>
+              <div class="card-heading"><div><span class="eyebrow">EVERYDAY SPENDING</span><h2>Your category breakdown</h2></div><strong class="money" id="todayMonthSpent">$0</strong></div>
               <div class="category-bars" id="todayCategoryBars"></div>
               <div class="runway-track"><i id="monthTimeBar"></i></div>
               <p id="runwayCopy">The month’s runway updates with the device date.</p>
@@ -696,6 +698,6 @@
   <script src="finance-report.js?v=29"></script>
   <script src="finance-ui.js?v=29"></script>
   <script src="english-dates.js?v=29"></script>
-  <script src="app.js?v=30"></script>
+  <script src="app.js?v=31"></script>
 </body>
 </html>
