@@ -156,3 +156,35 @@ test('Malformed note collections and duplicate kept-note IDs cannot silently rep
   for (const field of ['monthNotes','dailyIntentions','notes']) assert.throws(() => api.parseBackup(JSON.stringify({...api.blankState(),[field]:[]})))
   for (const notes of [ {'2026-13':[]}, {'2026-09':[{id:'a',date:'2026-02-30',text:'Invalid date'}]}, {'2026-09':[{id:'a',date:'2026-09-01',text:'A'},{id:'a',date:'2026-09-02',text:'B'}]} ]) assert.throws(() => api.parseBackup(JSON.stringify({...api.blankState(), monthNotes:notes})))
 })
+
+test('Twice-monthly forecasts accept 10 and 25, preserve legacy dates, and handle leap months and weekend shifts',()=>{
+ const {api}=planner();const s=api.blankState();Object.assign(s.profile,{usualPaycheck:2500,payCycle:'twice-monthly',payDayFirst:10,payDaySecond:25});api.state=s
+ assert.deepEqual(Array.from(api.forecastPaydaysFor('2026-09'),p=>p.date),['2026-09-10','2026-09-25'])
+ api.state.profile.payDayFirst=30;api.state.profile.payDaySecond=31
+ assert.deepEqual(Array.from(api.forecastPaydaysFor('2028-02'),p=>p.date),['2028-02-29'])
+ api.state.profile.payDayFirst=1;api.state.profile.payDaySecond=15;api.state.profile.weekendEarly=true
+ assert.ok(api.forecastPaydaysFor('2026-07').some(p=>p.date==='2026-07-31'))
+ delete s.profile.payDayFirst;delete s.profile.payDaySecond;api.state=s
+ assert.deepEqual(Array.from(api.forecastPaydaysFor('2026-09'),p=>p.date),['2026-09-15','2026-09-30'])
+ const restored=api.parseBackup(JSON.stringify({...api.state,profile:{...api.state.profile,payDayFirst:10,payDaySecond:25}}));assert.equal(restored.profile.payDayFirst,10);assert.equal(restored.profile.payDaySecond,25)
+})
+
+test('Backup rejects duplicate IDs and invalid bill/account amounts before replacing live data',()=>{
+ const {api}=planner();const s=api.blankState();
+ s.paydays=[{id:'same',date:'2026-09-10',amount:100},{id:'same',date:'2026-09-25',amount:200}];assert.throws(()=>api.parseBackup(JSON.stringify(s)));
+ s.paydays=[];s.bills=[{id:'bad',name:'Rent',due:1,amount:-5}];assert.throws(()=>api.parseBackup(JSON.stringify(s)));
+ s.bills=[];s.goals=[{id:'g',name:'Savings',target:-10,saved:0,contributions:[]}];assert.throws(()=>api.parseBackup(JSON.stringify(s)));
+})
+test('Invalid saved theme options fall back without breaking the interface',()=>{
+ const {api}=planner();const s=api.blankState();s.theme={main:null,handScope:'missing',bodyFont:null};api.state=s;
+ assert.match(api.state.theme.main,/^#[0-9a-f]{6}$/i);assert.equal(api.state.theme.handScope,'accents');assert.equal(typeof api.state.theme.bodyFont,'string');
+})
+
+test('Fresh/reset state can render paycheck planning before any reload or migration',()=>{
+ const {api}=planner();const fresh=api.blankState();assert.equal(require('../finance.js').plan(fresh,'').remaining,0);
+ assert.equal(fresh.paydays.length,0);assert.deepEqual(Object.keys(fresh.billAssignments),[]);
+})
+test('Retired milestones disappear on migration without changing financial records',()=>{
+ const {api}=planner();const s=api.blankState();s.milestones={reached:{backup:'2026-09-01'}};s.ui.milestoneFilter='all';s.paydays=[{id:'p',date:'2026-09-10',amount:2500}];api.state=s;
+ assert.equal(api.state.milestones,undefined);assert.equal(api.state.ui.milestoneFilter,undefined);assert.equal(api.state.paydays[0].amount,2500);
+})

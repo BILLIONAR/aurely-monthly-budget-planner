@@ -114,3 +114,12 @@ test('Reassigning and deleting spending affects only its linked paycheck', () =>
   s.expenses[0].paycheckId = 'next'; assert.equal(F.plan(s, 'pay').used, 0); assert.equal(F.plan(s, 'next').used, 50)
   s.expenses = []; assert.equal(F.plan(s, 'next').used, 0)
 })
+
+test('Paycheck flow shows the customer example and reconciles savings returns without double counting', () => {
+  const s = {paydays:[{id:'pay',amount:2500}],paycheckPlans:{pay:{savings:300,debt:200}},billAssignments:{rent:{paycheckId:'pay',amount:1200}},expenses:[],goals:[],debts:[]}
+  const p=F.plan(s,'pay'); const flow=F.flow(p)
+  assert.deepEqual(flow.map(row=>row.remaining),[2500,1300,1000,800,800]); assert.equal(flow.at(-1).remaining,p.remaining)
+  s.goals=[{id:'g',saved:1000,contributions:[{id:'return',date:'2026-09-10',type:'return',amount:500,paycheckId:'pay'}]}]
+  const returned=F.plan(s,'pay');assert.equal(F.flow(returned)[2].amount,-200);assert.equal(F.flow(returned).at(-1).remaining,returned.remaining)
+  s.expenses=[{id:'x',amount:2000,paycheckId:'pay'}]; const over=F.plan(s,'pay');assert.equal(F.flow(over).at(-1).remaining,over.remaining);assert.ok(over.remaining<0)
+})

@@ -57,3 +57,15 @@ test('Editing through the real form handler keeps the ID and updates the linked 
   assert.equal(s.goals[0].contributions[0].note, 'Corrected'); assert.equal(F.balance(s.goals[0], 'goal'), 125)
   assert.equal(F.plan(s, 'pay').used, 25)
 })
+
+test('Choosing a paycheck navigates to its exact month without changing expense-entry date behavior',()=>{
+ const s=state();s.selectedMonth='2026-08';s.selectedDate='2026-08-20';s.ui.printMonth='2026-08';const h=harness(s)
+ h.ui.selectPaycheck('pay');assert.equal(s.selectedDate,'2026-08-20');assert.equal(s.selectedMonth,'2026-08')
+ h.ui.selectPaycheck('pay',true);assert.equal(s.selectedMonth,'2026-09');assert.equal(s.selectedDate,'2026-09-01');assert.equal(s.ui.printMonth,'2026-09')
+})
+
+test('Explicit paycheck navigation persists the exact paycheck for reload and backup',()=>{
+ const s=state();s.selectedMonth='2026-08';s.selectedDate='2026-08-20';const h=harness(s)
+ h.ui.selectPaycheck('pay',true);assert.equal(s.ui.plannerPaycheck,'pay');
+ const restored=JSON.parse(JSON.stringify(s));assert.equal(restored.ui.plannerPaycheck,'pay');assert.equal(restored.selectedMonth,'2026-09')
+})
