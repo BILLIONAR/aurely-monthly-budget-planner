@@ -27,6 +27,7 @@
       for (const pay of selected) {
         const p = F.plan(state, pay.id)
         output.push(`<article><h4>${escape(pay.name)} · ${escape(pay.date)}</h4>${metrics([['Income', pay.amount], ['Used / assigned', p.used], ['Still reserved', p.reserved], ['Remaining', p.remaining]])}`)
+        output.push(table(['Paycheck flow', 'Amount', 'Left after this step'], F.flow(p).map(row => [row.label, (row.income || row.amount < 0 ? '+' : '−') + money(Math.abs(row.amount)), money(row.remaining)])))
         output.push(table(['Budget group', 'Used / assigned', 'Still reserved', 'Total planned'], [
           ['Bills', money(p.buckets.bills), money(0), money(p.buckets.bills)],
           ['Debt', money(p.actual.debt), money(p.pending.debt), money(F.round(p.actual.debt + p.pending.debt))],

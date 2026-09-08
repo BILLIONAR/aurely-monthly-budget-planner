@@ -1,3 +1,9 @@
+# v39 — September 8, 2026
+
+Customer feedback update: running paycheck balances; Money in → Bills → Planner; theme-matched months; fixed 10/25 paydays; calendar date picking; direct setup help; reliable month selection. Milestones removed. Additional fixes cover reset state, no-spend consistency, duplicate envelope categories, backup validation, preference recovery, and narrow/mobile typography.
+
+Validation: 76 Node regression tests. End-to-end finance, backup/restore, CSV, print, dates and theme flows checked in Chromium and WebKit. Ten screens at seven widths, plus separate memory-only demo restrictions.
+
 # AurelyStudio Monthly Budget Planner
 
 ## Product lock
@@ -16,7 +22,7 @@ The linked demo was reviewed as a live product-flow reference. Its useful intera
 
 - Undated month and year navigation
 - Responsive desktop and mobile Month Rail
-- Direct left navigation for all 11 screens, with a scrollable menu on smaller displays
+- Direct left navigation for all 10 screens, with a scrollable menu on smaller displays
 - Generated money calendar with bills, spending, paydays, and daily detail
 - Expandable monthly agenda list beneath the calendar
 - Month summary and gentle daily spending guide
@@ -35,7 +41,6 @@ The linked demo was reviewed as a live product-flow reference. Its useful intera
 - Today and Settings pay-period summaries with no automatic “money arrived” claims
 - Debt balances and dated payment history
 - Category envelopes with cap, used, left, over-cap, and unassigned views
-- Permanent data-derived milestones
 - Edit, remove, and five-second Undo patterns on key registers
 - Data-derived daily next steps; permanent XP and levels have been removed
 - Separate dated monthly notes with edit/delete/Undo, preserved drafts and dated daily intentions

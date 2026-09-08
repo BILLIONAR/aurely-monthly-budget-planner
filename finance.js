@@ -60,6 +60,16 @@
     const total = round(used + reserved)
     return { paycheck, bills, buckets, expenses, activity, actual, pending, used, reserved, total, remaining: round(Number(paycheck?.amount || 0) - total) }
   }
+  const flow = p => {
+    let remaining = round(p.paycheck?.amount || 0)
+    return [
+      { label: 'Paycheck', amount: remaining, income: true, detail: 'Saved income for this paycheck' },
+      { label: 'Bills', amount: p.buckets.bills, detail: 'Assigned bills, paid or unpaid' },
+      { label: 'Savings', amount: round(p.actual.savings + p.pending.savings), detail: 'Contributions + still reserved − returns' },
+      { label: 'Debt', amount: round(p.actual.debt + p.pending.debt), detail: 'Payments + still reserved' },
+      { label: 'Everyday spending', amount: round(p.actual.expenses + p.pending.other), detail: 'Spending + remaining Other allowance' }
+    ].map(row => { if (!row.income) remaining = round(remaining - row.amount); return { ...row, remaining } })
+  }
   const updateTransaction = (account, kind, row, existingId = '') => {
     const list = rows(account, kind); const index = existingId ? list.findIndex(item => item.id === existingId) : -1
     if (existingId && (index < 0 || row.id !== existingId)) throw Error('The original transaction could not be found.')
@@ -83,7 +93,7 @@
       if (!row || !state.paydays.some(pay => pay.id === row.paycheckId) || !/^[\w-]+$/.test(row.billId) || !validDate(row.date) || key !== row.date.slice(0, 7) + '/' + row.billId || !Number.isFinite(Number(row.amount)) || Number(row.amount) < 0 || typeof row.name !== 'string') throw Error('Invalid bill assignment.')
     }
   }
-  const api = { round, rows, type, effect, opening, ordered, balance, validDate, validate, cash, migrate, plan, referenced, validateState, updateTransaction }
+  const api = { round, rows, type, effect, opening, ordered, balance, validDate, validate, cash, migrate, plan, flow, referenced, validateState, updateTransaction }
   if (typeof module === 'object' && module.exports) module.exports = api
   else root.BudgetFinance = api
 })(globalThis)

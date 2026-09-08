@@ -1,5 +1,5 @@
-const CACHE = 'aurely-monthly-budget-v36'
-const SHELL = ['./', './index.html', './styles.css?v=36', './app.js?v=36', './finance.js?v=29', './finance-report.js?v=29', './finance-ui.js?v=34', './english-dates.js?v=29', './manifest.webmanifest', './assets/aurely-logo.svg?v=29']
+const CACHE = 'aurely-monthly-budget-v39'
+const SHELL = ['./', './index.html', './styles.css?v=39', './app.js?v=39', './finance.js?v=39', './finance-report.js?v=39', './finance-ui.js?v=39', './english-dates.js?v=39', './manifest.webmanifest', './assets/icon-192.png', './assets/icon-512.png', './assets/aurely-logo.svg?v=29']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)))
