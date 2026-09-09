@@ -1,3 +1,7 @@
+# v43 — September 9, 2026
+
+Insights now stacks Run to Payday, Next Gentle Step and Everyday Spending in the left column, with Coming Up · Next Six Weeks on the right. The columns size independently, avoiding the previous large gap. On phones the left stack appears first and upcoming dates follow. Today, Calendar, all calculations and stored data are unchanged from v42.
+
 # v42 — September 9, 2026
 
 Adds visible-on-entry statistic counters and chart motion, keyboard/touch donut amounts, planned-cap versus logged-spending comparisons, a combined income/spending register, fixed-payment debt payoff estimates, optional saving-goal target dates, and editable quick-spend shortcuts. Today and Calendar keep their v41 column layouts.

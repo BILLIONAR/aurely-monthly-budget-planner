@@ -1743,3 +1743,7 @@ body.launching { overflow: hidden; }
 @media(max-width:680px) { .inline-goal-form { grid-template-columns:1fr; } }
 .flow-ring.interactive-ring > div { inset:16%; }
 .flow-ring.interactive-ring strong { white-space:nowrap; overflow-wrap:normal; }
+
+/* v43: independent Insights columns avoid gaps from the longer upcoming list. */
+.insights-now-stack { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; align-content:start; }
+.insights-now-stack > * { min-width:0; grid-column:auto; }
