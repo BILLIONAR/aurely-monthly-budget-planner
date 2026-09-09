@@ -1,3 +1,11 @@
+# v42 — September 9, 2026
+
+Adds visible-on-entry statistic counters and chart motion, keyboard/touch donut amounts, planned-cap versus logged-spending comparisons, a combined income/spending register, fixed-payment debt payoff estimates, optional saving-goal target dates, and editable quick-spend shortcuts. Today and Calendar keep their v41 column layouts.
+
+Schema 12 retains all existing financial records. New goal dates and shortcuts travel with JSON backups; malformed new fields are rejected before restore. Debt estimates assume fixed APR/12, monthly payments starting next month, and no new charges or fees; they never post interest to an account. Comparisons use current envelope caps, including for past months. The combined register labels paychecks as scheduled income and does not claim a bank balance.
+
+QA: 87 unit tests and 4 demo restriction tests; Chromium/WebKit regression and new-feature journeys, seven responsive widths, original layout checks, goal leap-date picker, backup/restore, privacy, and motion/reduced-motion checks. Demo remains memory-only, including new dates and shortcuts. No new dependency, copied component, paid service or sticker content.
+
 # v41 — September 9, 2026
 
 Restores the two-column desktop Today and Calendar layouts. Today has the Budget Guide and check-in on the left, quests and dated records on the right, with Perspective and Brain Dump below. Calendar has its month grid on the left, day/activity/glance on the right, and Notes below. Long lists scroll within their panels; phones stack the sections. All v40 features and stored data remain intact.

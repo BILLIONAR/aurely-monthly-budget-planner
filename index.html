@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@500;600;700&family=Dancing+Script:wght@500;600&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700&family=Nunito+Sans:wght@400;600;700;800&family=Patrick+Hand&family=Sacramento&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=41">
+  <link rel="stylesheet" href="styles.css?v=42">
 </head>
 <body>
   <div class="launch-screen" id="launchScreen" role="dialog" aria-modal="true" aria-labelledby="launchTitle">
@@ -290,7 +290,9 @@
             <article class="metric-card featured">
               <span>Still yours</span><strong class="money" id="metricRemaining">$0</strong><small id="metricDaily">available for the month</small>
             </article>
-          </div><section id="monthInsights" class="money-insights" aria-label="Selected month visual overview"></section><article class="paper-card"><span class="eyebrow">YOUR SAVED RECORDS</span><h2>Savings & debt progress</h2><div id="insightsProgress" class="insights-progress"></div></article><div class="page-heading"><div><span class="eyebrow">AS OF TODAY</span><h2>Right now</h2><p>These guides use your device date, regardless of the month above.</p></div></div><div class="insights-today-grid"><article class="paper-card run-to-payday-card">
+          </div><section id="monthInsights" class="money-insights" aria-label="Selected month visual overview"></section><article id="budgetComparison" class="paper-card comparison-card" aria-label="Planned versus spent"></article>
+          <article class="paper-card ledger-card"><div class="card-heading"><div><span class="eyebrow">TOGETHER IN ONE PLACE</span><h2>Income & spending</h2></div><span id="ledgerPeriod" class="insight-period"></span></div><p>Saved paychecks, extra income and spending entries. Paychecks are scheduled income, not confirmation of receipt. Bill schedules, forecasts and account transfers are excluded; this is not a bank balance.</p><div class="ledger-filters"><label>Search records<input id="ledgerSearch" type="search" placeholder="Name, category or date"></label><label>Type<select id="ledgerType"><option value="">All types</option><option value="income">Income</option><option value="spending">Spending</option></select></label><label class="check-row"><input type="checkbox" id="ledgerAll"><span>All saved dates</span></label></div><p id="ledgerCount" role="status"></p><div class="ledger-scroll" tabindex="0" role="region" aria-label="Income and spending table. Scroll for all columns."><table><thead><tr><th scope="col">Date</th><th scope="col">Record</th><th scope="col">Type</th><th scope="col">Amount</th><th scope="col">Action</th></tr></thead><tbody id="combinedLedgerRows"></tbody></table></div><button id="ledgerMore" type="button" class="ghost-button small-button" hidden>Show 50 more</button></article>
+          <article class="paper-card"><span class="eyebrow">YOUR SAVED RECORDS</span><h2>Savings & debt progress</h2><div id="insightsProgress" class="insights-progress"></div></article><div class="page-heading"><div><span class="eyebrow">AS OF TODAY</span><h2>Right now</h2><p>These guides use your device date, regardless of the month above.</p></div></div><div class="insights-today-grid"><article class="paper-card run-to-payday-card">
               <div class="card-heading"><div><span class="eyebrow">RUN TO PAYDAY</span><h2 id="paydayRunTitle">Your next money landing</h2></div><strong id="paydayDaysLeft">—</strong></div>
               <div class="payday-run-track" aria-hidden="true"><i id="paydayRunBar"></i></div>
               <div class="payday-run-metrics">
@@ -375,6 +377,7 @@
             <label><span>Target</span><input name="target" type="number" min="1" step="1" required placeholder="650"></label>
             <label><span>Already saved</span><input name="saved" type="number" min="0" step="1" value="0"></label>
             <label><span>Monthly plan</span><input name="monthly" type="number" min="0" step="1" value="25"></label>
+            <label><span>Target date (optional)</span><input name="targetDate" type="date"></label>
             <button class="primary-button" type="submit">Create goal</button>
           </form>
         </section>
@@ -604,6 +607,7 @@
       <label>Name<input name="name" maxlength="60" required></label>
       <label><span id="accountPrimaryLabel">Target</span><input name="primary" type="number" min="0" step="0.01" required></label>
       <label><span id="accountMonthlyLabel">Monthly plan</span><input name="monthly" type="number" min="0" step="0.01" required></label>
+      <label id="accountTargetDateLabel">Target date (optional)<input name="targetDate" type="date"></label>
       <p class="finance-hint">To change the balance, use Balance correction on the account card. Your dated transactions stay intact.</p>
       <button class="primary-button" type="submit">Save changes</button>
     </form>
@@ -653,12 +657,14 @@
     <article class="dialog-shell"><button class="dialog-close" id="closeHelp" aria-label="Close help" type="button">×</button><span class="eyebrow">PLANNER HELP</span><h2 id="helpTitle">A little context</h2><p id="helpText">Help appears here.</p><button class="primary-button" id="helpDone" type="button">Got it</button></article>
   </dialog>
 
+  <dialog class="quick-dialog" id="presetDialog" aria-labelledby="presetTitle"><div class="dialog-shell"><button class="dialog-close" id="presetClose" type="button" aria-label="Close quick spends">×</button><span class="eyebrow">YOUR EVERYDAY SHORTCUTS</span><h2 id="presetTitle">Quick spends</h2><p>A shortcut logs one spending entry for today. Keep up to 12 favorites; managing them never changes earlier entries.</p><div id="presetList"></div><form id="presetForm"><input type="hidden" name="id"><label>Name<input name="name" maxlength="40" required placeholder="Coffee"></label><label>Amount<input name="amount" type="number" min="0.01" max="100000000" step="0.01" required></label><label>Category<select name="category"><option>Groceries</option><option>Home</option><option>Transport</option><option>Eating out</option><option>Fun</option><option>Other</option></select></label><p id="presetError" role="alert"></p><div class="row-actions"><button id="presetSave" class="primary-button" type="submit">Add quick spend</button><button id="presetCancelEdit" class="ghost-button" type="button">Clear form</button></div></form></div></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button id="toastAction" type="button" hidden>Undo</button></div>
   <style id="printPageSize" media="print"></style>
-  <script src="finance.js?v=41"></script>
-  <script src="finance-report.js?v=41"></script>
-  <script src="finance-ui.js?v=41"></script>
-  <script src="english-dates.js?v=41"></script>
-  <script src="app.js?v=41"></script>
+  <script src="finance.js?v=42"></script>
+  <script src="finance-report.js?v=42"></script>
+  <script src="finance-ui.js?v=42"></script>
+  <script src="english-dates.js?v=42"></script>
+  <script src="budget-extras.js?v=42"></script>
+  <script src="app.js?v=42"></script>
 </body>
 </html>

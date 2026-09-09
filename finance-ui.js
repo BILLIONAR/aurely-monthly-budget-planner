@@ -107,6 +107,7 @@ window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid,
     form.elements.primary.min = kind === 'goal' ? '0.01' : '0'; form.elements.primary.value = kind === 'goal' ? account.target : account.apr
     $('#accountMonthlyLabel').textContent = kind === 'goal' ? 'Monthly saving plan' : 'Usual payment'
     form.elements.monthly.value = kind === 'goal' ? account.monthly : account.payment
+    if (form.elements.targetDate) { $('#accountTargetDateLabel').hidden = kind !== 'goal'; form.elements.targetDate.disabled = kind !== 'goal'; form.elements.targetDate.value = kind === 'goal' ? account.targetDate || '' : '' }
     $('#accountEditDialog').showModal()
   }
   const commit = message => { state().profile.sampleData = false; save(); renderAll(); toast(message) }
@@ -191,7 +192,7 @@ window.createFinanceUI = function ({ getState, save, renderAll, money, esc, uid,
     $('#accountEditForm').addEventListener('submit', event => {
       event.preventDefault(); const { kind, id } = editing; const account = accountFor(kind, id); if (!account) return
       const data = Object.fromEntries(new FormData(event.target)); account.name = data.name.trim()
-      if (kind === 'goal') { account.target = F.round(data.primary); account.monthly = F.round(data.monthly) }
+      if (kind === 'goal') { account.target = F.round(data.primary); account.monthly = F.round(data.monthly); account.targetDate = data.targetDate || '' }
       else { account.apr = Number(data.primary); account.payment = F.round(data.monthly) }
       $('#accountEditDialog').close(); commit('Account updated; transaction history preserved')
     })

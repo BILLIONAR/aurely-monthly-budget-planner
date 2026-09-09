@@ -1,4 +1,4 @@
-const CACHE = 'aurely-monthly-budget-v41'
+const CACHE = 'aurely-monthly-budget-v42'
 const SHELL = ['./', './index.html', './styles.css?v=41', './app.js?v=41', './finance.js?v=41', './finance-report.js?v=41', './finance-ui.js?v=41', './english-dates.js?v=41', './manifest.webmanifest', './assets/icon-192.png', './assets/icon-512.png', './assets/aurely-logo.svg?v=29']
 
 self.addEventListener('install', (event) => {
