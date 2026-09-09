@@ -1,3 +1,11 @@
+# v40 — clearer daily planning
+
+Today now follows Daily Check-In, Three Small Things, Your Dated Records, and side-by-side Perspective / Brain Dump. No Spend Day is visible in daily capture and replaces the time control in quick capture. Calendar owns the month grid, selected day, activity, spending breakdown and monthly notes. Insights holds actual-record summaries, charts and progress. Wishlist provides a persistent 72-hour pause, editing, let-go/delete/Undo and a checked, single-entry purchase flow tied to a saved paycheck. Purchases require available plan remainder and user confirmation of cash.
+
+Existing v39 finance data migrates to schema 11 without losing dated records. JSON includes wishes and print optionally includes all wishes. No bank connection or automatic sync. Existing official logo, Theme Studio and backups retained.
+
+QA: 82 unit tests, full 13-view browser checks in Chromium/WebKit at 7 widths, wishlist timing/purchase/backup round-trip, no-spend/date history and 4 demo restriction tests. Demo remains memory-only.
+
 # v39 — September 8, 2026
 
 Customer feedback update: running paycheck balances; Money in → Bills → Planner; theme-matched months; fixed 10/25 paydays; calendar date picking; direct setup help; reliable month selection. Milestones removed. Additional fixes cover reset state, no-spend consistency, duplicate envelope categories, backup validation, preference recovery, and narrow/mobile typography.
@@ -22,7 +30,7 @@ The linked demo was reviewed as a live product-flow reference. Its useful intera
 
 - Undated month and year navigation
 - Responsive desktop and mobile Month Rail
-- Direct left navigation for all 10 screens, with a scrollable menu on smaller displays
+- Direct left navigation for all 13 screens, with a scrollable menu on smaller displays
 - Generated money calendar with bills, spending, paydays, and daily detail
 - Expandable monthly agenda list beneath the calendar
 - Month summary and gentle daily spending guide

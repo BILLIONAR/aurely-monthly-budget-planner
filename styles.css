@@ -1535,3 +1535,48 @@ body.launching { overflow: hidden; }
 .hand-scope-full h1, .hand-scope-full h2, .hand-scope-full h3,
 .hand-scope-full .topbar-title strong { font-family: var(--hand-font) !important; }
 .hand-scope-full .today-date-card strong { font-family: var(--money-font) !important; }
+
+/* v40: each page has one job; preserve the planner paper and live theme. */
+.today-simplified { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:20px; }
+.today-simplified > * { grid-column:1/-1; min-width:0; }
+.today-simplified > .weekly-review-card,.today-simplified > .brain-card { grid-column:span 1; height:100%; }
+.daily-checkin-card { padding:26px; border-top:4px solid var(--main); }
+.daily-checkin-card h2 { margin:5px 0; }
+.daily-checkin-card #rightNowTask { color:var(--muted); }
+.daily-checkin-card .check-in-actions { display:flex; flex-wrap:wrap; margin:18px 0; }
+.daily-checkin-card .light-button { background:var(--main); color:white; margin-top:14px; }
+.daily-checkin-card .today-spent-summary { color:var(--ink); border-color:var(--line); }
+.daily-checkin-card .common-spends button { color:var(--ink); background:var(--paper); border:1px solid var(--line); min-height:44px; }
+.today-simplified .weekly-metrics { grid-template-columns:1fr; }
+.today-simplified .weekly-metrics > span { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+.daily-intention { border-top:1px solid var(--line); margin-top:20px; padding-top:16px; }
+.daily-intention summary { cursor:pointer; font-weight:700; }
+.daily-intention > div { padding-top:16px; }.daily-intention h2 { font-size:1.4rem; }
+.capture-no-spend { display:flex; flex-direction:column; justify-content:center; gap:8px; min-width:0; }
+.capture-no-spend small { color:var(--muted); }.capture-no-spend button { min-height:44px; }
+.no-spend-button:disabled { opacity:.65; cursor:not-allowed; }
+.calendar-page { display:grid; gap:20px; }.calendar-page > * { min-width:0; }
+.calendar-page .day-card { display:grid; gap:16px; }.calendar-page .monthly-notes-card { margin:0; }
+.page-month-picker { display:grid; gap:4px; font-size:.7rem; }.page-month-picker .english-date-trigger { min-height:44px; }
+#view-insights > .paper-card { margin:20px 0; }
+.insights-today-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; align-items:start; }
+.insights-today-grid > * { grid-column:auto; min-width:0; }
+.trend-row { display:grid; grid-template-columns:90px minmax(20px,1fr) auto; gap:12px; align-items:center; background:none; border:0; text-align:left; width:100%; padding:12px 0; color:var(--ink); cursor:pointer; }
+.trend-row > i { height:9px; border-radius:3px; background:color-mix(in srgb,var(--main) 10%,var(--paper)); overflow:hidden; }
+.trend-row > i > b { display:block; height:100%; background:var(--main); }.trend-row small { grid-column:1/-1; color:var(--muted); }
+.insights-progress { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px; }
+.insights-progress a { display:grid; gap:10px; color:var(--ink); text-decoration:none; padding:18px; border:1px solid var(--line); border-radius:10px; }.insights-progress strong { font-size:1.8rem; }
+.insights-progress small { color:var(--muted); }
+.wishlist-rule { margin-bottom:24px; }.wishlist-rule p { max-width:740px; }.wishlist-rule small { opacity:.85; }
+.wishlist-layout { display:grid; grid-template-columns:minmax(240px,.7fr) minmax(0,1.3fr); gap:24px; align-items:start; }
+.wishlist-layout > * { min-width:0; }.wishlist-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; margin-bottom:16px; }.wishlist-toolbar label { display:grid; gap:5px; font-size:.75rem; }
+.wishlist-list { display:grid; gap:16px; }.wish-card { padding:24px; }.wish-card h3 { font:600 1.7rem var(--heading-font); margin:6px 0; overflow-wrap:anywhere; }.wish-card .card-heading { align-items:start; flex-wrap:wrap; }.wish-card > .row-actions { margin-top:16px; }
+.wish-status { color:var(--main); font-size:.7rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }.wish-note { white-space:pre-wrap; overflow-wrap:anywhere; }
+.wish-card progress,.insights-progress progress { display:block; width:100%; height:8px; accent-color:var(--main); margin:18px 0; }.wish-card .finance-actions { flex-wrap:wrap; }.wish-card a { color:var(--main); }
+#wishlistError,#wishReviewError { color:var(--ink); font-weight:700; }
+.no-spend-mark { font-size:11px; color:var(--main); }
+@media(max-width:850px) { .wishlist-layout { grid-template-columns:1fr; }.insights-today-grid { grid-template-columns:1fr; }.today-simplified { grid-template-columns:1fr; }.today-simplified > .weekly-review-card,.today-simplified > .brain-card { grid-column:1/-1; } }
+@media(max-width:680px) { .daily-checkin-card { padding:18px; }.insights-progress { grid-template-columns:1fr; }.trend-row { grid-template-columns:70px minmax(15px,1fr) auto; gap:8px; }.wish-card { padding:18px; }.page-heading .month-controls { flex-wrap:wrap; max-width:100%; } }
+#wishlistForm,#view-insights > .paper-card { padding:24px; }
+#view-wishlist .paper-card,#view-wishlist .ink-card,#view-calendar .paper-card,#view-insights .paper-card,#view-insights .ink-card { border-radius:12px; }
+@media(max-width:680px) { #wishlistForm,#view-insights > .paper-card { padding:18px; } }
