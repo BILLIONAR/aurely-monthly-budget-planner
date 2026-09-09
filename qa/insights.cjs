@@ -26,7 +26,7 @@ test('Empty, over-plan and leap-year views remain truthful',()=>{
  const v=a.insightSnapshot('2026-09');assert.equal(v.left,-23.45);assert.equal(v.total,23.45);s.expenses=[];a.state=s;assert.equal(a.insightSnapshot('2026-09').used,0)
 })
 test('Today is the first navigation item, followed by Planner',()=>{
- const html=readFileSync(require.resolve('../index.html'),'utf8');assert.ok(html.indexOf('data-view="today"')<html.indexOf('data-view="month"'));assert.ok(html.includes('id="todayInsights"'))
+ const html=readFileSync(require.resolve('../index.html'),'utf8');assert.ok(html.indexOf('data-view="today"')<html.indexOf('data-view="month"'));assert.ok(html.includes('data-view-panel="insights"'))
 })
 test('Six-month chart crosses years and excludes forecast income',()=>{
  const a=api(),s=a.blankState();s.paydays=[{id:'p',date:'2025-12-31',amount:10.20}];s.moneyIn=[{id:'m',date:'2026-01-01',amount:5.30}];s.expenses=[{id:'e',date:'2025-12-31',amount:2.15,category:'Other'}];a.state=s

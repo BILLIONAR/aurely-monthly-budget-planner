@@ -100,7 +100,7 @@ test('A fresh page welcomes a known name again, even in the same previously-seen
 test('Normal startup selects Today; section navigation never calls the opening', () => {
   const source=readFileSync(require.resolve('../app.js'),'utf8')
   const startup=source.slice(source.indexOf('  const initialHash ='))
-  assert.match(startup,/switchView\('today', initialHash === '#screen-opening'\)/)
+  assert.ok(startup.includes("VIEW_META[initialHash.replace('#screen-', '')]")); assert.ok(startup.includes(" : 'today', initialHash"))
   const navigation=source.slice(source.indexOf('  const switchView ='),source.indexOf('  const switchView =')+1500)
   assert.doesNotMatch(navigation,/playLaunch\(/)
 })
