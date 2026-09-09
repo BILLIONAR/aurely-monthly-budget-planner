@@ -1580,3 +1580,116 @@ body.launching { overflow: hidden; }
 #wishlistForm,#view-insights > .paper-card { padding:24px; }
 #view-wishlist .paper-card,#view-wishlist .ink-card,#view-calendar .paper-card,#view-insights .paper-card,#view-insights .ink-card { border-radius:12px; }
 @media(max-width:680px) { #wishlistForm,#view-insights > .paper-card { padding:18px; } }
+
+/* v41: the daily workspace returns to a guide beside the day's records. */
+.today-simplified { align-items:stretch; }
+.daily-checkin-card .guide-checkin { margin-top:20px; padding-top:18px; border-top:1px solid rgba(255,255,255,.22); }
+.daily-checkin-card #rightNowTask,.daily-checkin-card #noSpendHint { color:rgba(255,255,255,.8); }
+.daily-checkin-card .today-spent-summary { color:#fff; border-color:rgba(255,255,255,.22); }
+.daily-checkin-card .today-spent-summary small { color:rgba(255,255,255,.8); }
+.daily-checkin-card .check-in-actions { margin:12px 0; }
+.daily-checkin-card .no-spend-button { background:#fffdf8; color:var(--main); }
+.daily-checkin-card .common-spends { margin:12px 0; }
+.daily-checkin-card .common-spends button { background:rgba(255,255,255,.09); color:#fff; border-color:rgba(255,255,255,.3); }
+.daily-checkin-card .light-button { background:#fffdf8; color:var(--main); margin-top:0; }
+.daily-checkin-card .hero-money { margin-top:12px; }
+.daily-checkin-card .today-formula-help { color:rgba(255,255,255,.86); }
+[role="region"][tabindex="0"]:focus-visible { outline:2px solid var(--main); outline-offset:3px; }
+@media(min-width:1100px) {
+  .content-wrap:has(#view-today.active),.content-wrap:has(#view-calendar.active) { padding-top:18px; padding-bottom:20px; }
+  #view-today > .page-heading,#view-calendar > .page-heading { margin-bottom:16px; padding-bottom:14px; }
+  #view-today .today-welcome { gap:18px; padding-top:0; }
+  #view-today .today-welcome h1,#view-calendar > .page-heading h1 { font-size:2.4rem; margin:4px 0 6px; }
+  #view-today .today-welcome p,#view-calendar > .page-heading p { font-size:.8rem; }
+  #view-today .today-date-card { width:64px; min-width:64px; padding:10px 8px; }
+  #view-today .today-date-card strong { font-size:2.1rem; }
+  .today-simplified { grid-template-columns:minmax(0,.95fr) minmax(0,1.15fr); grid-template-areas:"guide quests" "guide records" "perspective brain"; gap:14px; }
+  .today-simplified > .daily-checkin-card { grid-area:guide; padding:22px; }
+  .today-simplified > .today-quests-card { grid-area:quests; padding:18px; }
+  .today-simplified > .today-activity { grid-area:records; padding:18px; }
+  .today-simplified > .weekly-review-card { grid-area:perspective; padding:18px; }
+  .today-simplified > .brain-card { grid-area:brain; padding:18px; }
+  .today-simplified .card-heading h2 { font-size:1.4rem; }
+  .today-simplified .mini-quest-list { gap:6px; margin-top:10px; }
+  .today-simplified .mini-quest { padding:8px; min-height:44px; }
+  .today-simplified .today-week-strip { margin:10px 0; }
+  .today-simplified .today-week-strip button { padding:7px 3px; min-height:58px; }
+  .today-simplified .today-week-strip strong { font-size:1rem; }
+  .today-simplified .day-journal-controls { margin:8px 0; gap:5px; }
+  .today-simplified .day-journal-controls label { min-width:0; }
+  .today-simplified .finance-hint { margin:8px 0; }
+  #todayRegister { max-height:110px; overflow:auto; margin-top:6px; }
+  #todayRegister .activity-row { padding-block:8px; }
+  .today-simplified .weekly-metrics { gap:7px; margin-top:12px; }
+  .today-simplified .weekly-metrics > span { padding:9px 11px; }
+  .today-simplified .weekly-review-card > p { margin-top:10px; }
+  .today-simplified .daily-intention { margin-top:12px; padding-top:10px; }
+  #brainDumpList { max-height:100px; overflow:auto; }
+  .focus-mode .today-simplified { grid-template-columns:minmax(0,720px); grid-template-areas:"guide"; justify-content:center; }
+  .calendar-page { grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); grid-template-areas:"calendar day" "calendar activity" "calendar glance" "notes notes"; gap:14px; align-items:stretch; }
+  .calendar-page > .calendar-card { grid-area:calendar; padding:18px; }
+  .calendar-page > .day-card { grid-area:day; padding:16px; gap:9px; }
+  .calendar-page > .activity-card { grid-area:activity; padding:16px; }
+  .calendar-page > .glance-card { grid-area:glance; padding:16px; }
+  .calendar-page > .monthly-notes-card { grid-area:notes; padding:16px 18px; }
+  .calendar-page .card-heading h2 { font-size:1.3rem; }
+  .calendar-page .calendar-weekdays { margin-top:16px; }
+  .calendar-page .calendar-weekdays span { padding:8px 4px; text-align:center; }
+  .calendar-page .calendar-day,.calendar-page .calendar-blank { min-height:60px; padding:8px; }
+  .calendar-page .calendar-day > small { margin-top:10px; }
+  .calendar-page .month-agenda { max-height:100px; }
+  .calendar-page .calendar-foot { padding:10px; grid-template-columns:1fr auto; gap:5px; }
+  .calendar-page .calendar-foot em { grid-column:1/-1; justify-self:start; text-align:left; }
+  .calendar-page .day-date { padding-bottom:10px; grid-template-columns:44px 1fr; gap:10px; }
+  .calendar-page .day-date > span { font-size:2.5rem; }
+  .calendar-page .day-events { max-height:75px; overflow:auto; padding-top:0; }
+  .calendar-page .day-events p { margin:0; }
+  .calendar-page .register-filters { margin-top:10px; gap:6px; }
+  .calendar-page .filter-count { margin:7px 0; }
+  #monthRegister { max-height:105px; overflow:auto; margin-top:5px; }
+  #monthRegister .activity-row { padding-block:7px; }
+  .calendar-page .glance-total { margin:10px 0; }
+  #monthCategoryBars { max-height:90px; overflow:auto; }
+  .calendar-page .category-row { padding-block:5px; }
+  .calendar-page .monthly-notes-layout { margin-top:12px; gap:20px; }
+  .calendar-page #monthNote { min-height:66px; height:66px; }
+  #keptMonthNotes { max-height:130px; overflow:auto; }
+  .calendar-page .note-composer .finance-hint { margin:7px 0 0; }
+}
+@media(max-width:1099px) {
+  .today-simplified { grid-template-columns:1fr; }
+  .today-simplified > * { grid-column:1/-1; }
+}
+@media(min-width:1100px) {
+  #view-today .today-date-card { flex-basis:64px; }
+  #view-today .today-welcome { min-height:0; }
+  #view-today .today-local-status { margin-top:6px; }
+  .daily-checkin-card .hero-money { font-size:3.5rem; line-height:1.1; margin:10px 0; }
+  .daily-checkin-card .today-money-context { margin:8px 0; }
+  .daily-checkin-card #todayFormula { margin-bottom:8px; font-size:.78rem; }
+  .daily-checkin-card .today-formula-help { margin-bottom:0; }
+  .daily-checkin-card .guide-checkin { margin-top:12px; padding-top:12px; }
+  .daily-checkin-card .guide-checkin > div:first-child > .eyebrow { display:none; }
+  .daily-checkin-card .guide-checkin h2 { font-size:1.4rem; }
+  .daily-checkin-card #rightNowTask { margin-bottom:0; font-size:.8rem; }
+  .daily-checkin-card .today-spent-summary { padding:8px 0; }
+  .daily-checkin-card .common-spends { margin:6px 0 10px; }
+  .daily-checkin-card #noSpendHint { font-size:.72rem; margin-bottom:0; }
+  .today-simplified .weekly-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .today-simplified .weekly-metrics > span { display:grid; align-content:start; gap:7px; }
+  .today-simplified .weekly-metrics strong { font-size:.95rem; }
+  .today-simplified .weekly-review-card > p { font-size:.72rem; }
+  .calendar-page .calendar-card .month-agenda { max-height:66px; }
+  .calendar-page .calendar-day,.calendar-page .calendar-blank { min-height:54px; }
+  .calendar-page .calendar-foot { min-height:0; font-size:.8rem; }
+  .calendar-page .calendar-foot em { font-size:.85rem; }
+  .calendar-page .register-filters { display:grid; grid-template-columns:minmax(0,1fr) minmax(100px,.7fr) auto; margin-bottom:5px; }
+  .calendar-page .monthly-notes-layout { grid-template-columns:1.3fr 1fr; }
+  .calendar-page .monthly-notes-layout textarea { margin-top:0; }
+  .calendar-page .monthly-notes-layout .finance-actions { margin-top:6px; }
+  .calendar-page .monthly-notes-layout .finance-hint { font-size:.68rem; }
+}
+/* Keep the moved calendar surfaces readable in every saved theme. */
+.calendar-page .calendar-foot { background:var(--paper-solid); color:var(--muted); }
+.calendar-page .calendar-foot strong { color:var(--ink); }
+.calendar-page .ghost-button { background:var(--paper-solid); color:var(--ink); }

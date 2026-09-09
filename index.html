@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@500;600&family=Cormorant+Garamond:wght@500;600;700&family=Dancing+Script:wght@500;600&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&family=Lora:wght@500;600;700&family=Manrope:wght@400;600;700&family=Nunito+Sans:wght@400;600;700;800&family=Patrick+Hand&family=Sacramento&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=40">
+  <link rel="stylesheet" href="styles.css?v=41">
 </head>
 <body>
   <div class="launch-screen" id="launchScreen" role="dialog" aria-modal="true" aria-labelledby="launchTitle">
@@ -187,7 +187,13 @@
           </div>
 
           <div class="focus-notice" id="focusNotice" role="status" hidden><span><strong>Focus is on</strong><small>Only your next action is showing. Everything else is saved.</small></span><button id="exitFocus" type="button">Show everything</button></div>
-          <div class="today-dashboard today-simplified"><article class="paper-card daily-checkin-card focus-target">
+          <div class="today-dashboard today-simplified"><article class="ink-card daily-checkin-card focus-target">
+              <div class="card-heading"><span class="eyebrow">TODAY’S BUDGET GUIDE</span><button class="help-dot light" type="button" data-help-title="Today’s budget guide" data-help-text="The current calendar month’s planned income minus bills, logged spending, goal deposits and debt payments, divided by the days left including today. Scheduled income may not have arrived yet. This is a budget estimate, not your available bank balance." aria-label="How is today’s budget guide worked out?">?</button></div>
+              <strong class="hero-money money" id="todaySafe">$0</strong>
+              <div class="today-money-context"><span><small>PLAN THROUGH</small><b id="todayPlanUntil"></b></span><span><small>MONTHLY PLAN LEFT</small><b class="money" id="todayPlanRemaining"></b></span></div>
+              <p id="todayFormula">Based on this month’s saved plan and activity.</p>
+              <details class="today-formula-help"><summary>How is this worked out?</summary><p>Planned monthly income minus bills, spending, savings set aside and debt payments, divided by the days left including today. It updates when you edit records. Scheduled income may not have arrived; this is not your bank balance.</p></details>
+              <div class="guide-checkin">
               <div><span class="eyebrow">DAILY CHECK-IN</span><h2>Daily Check-In</h2><p id="rightNowTask">Log spending or check in for today</p></div>
               <div class="check-in-actions"><button class="primary-button" id="rightNowButton" type="button">Do it now →</button><button class="no-spend-button" id="noSpendButton" type="button" aria-pressed="false">No Spend Day</button></div>
             <div class="today-spent-summary"><span>Logged today</span><strong class="money" id="todaySpentTotal"></strong><small id="todaySpentCount"></small></div>
@@ -197,14 +203,14 @@
                 <button type="button" data-quick-spend="6" data-quick-category="Transport" data-quick-note="Transit">+ Transit <span data-common-amount="6"></span></button>
               </div>
               <button class="light-button" id="todayLogButton" type="button">Log an exact amount <span>＋</span></button>
-            <p class="finance-hint" id="noSpendHint"></p></article><article class="paper-card today-quests-card">
+            <p class="finance-hint" id="noSpendHint"></p></div></article><article class="paper-card today-quests-card">
               <div class="card-heading"><div><span class="eyebrow">THREE SMALL THINGS</span><h2>Three Small Things</h2></div><strong id="todayQuestScore">0 / 3</strong></div>
               <div class="mini-quest-list" id="todayQuestList"></div>
             </article><article class="paper-card activity-card today-activity" id="today-journal">
               <div class="card-heading"><div><span class="eyebrow">YOUR DATED RECORDS</span><h2 id="todayRegisterTitle">Today’s register</h2></div><button class="ghost-button small-button" id="todayRegisterAdd" type="button">Add spending</button></div>
               <div class="today-week-strip" id="todayWeekStrip"></div><div class="day-journal-controls"><button type="button" id="journalPrevious" aria-label="Previous journal day">←</button><label>Choose a date<input type="date" id="journalDate"></label><button type="button" id="journalNext" aria-label="Next journal day">→</button><button type="button" id="journalToday">Today</button></div>
               <p class="finance-hint" id="journalSummary"></p>
-              <div class="activity-list" id="todayRegister"></div>
+              <div class="activity-list" id="todayRegister" tabindex="0" role="region" aria-label="Dated spending records"></div>
               <p class="journal-note" id="journalIntention" hidden></p>
             </article><article class="paper-card weekly-review-card">
               <div class="card-heading"><div><span class="eyebrow">A LITTLE PERSPECTIVE</span><h2>Your last seven days</h2></div><small id="weekRange"></small></div>
@@ -213,7 +219,7 @@
             </article><article class="paper-card brain-card">
               <div class="card-heading"><div><span class="eyebrow">BRAIN DUMP</span><h2>Get it out of your head</h2></div><button class="help-dot" type="button" data-help-title="Brain dump" data-help-text="This is a private local list, not a money calculation. Type a thought and press Enter." aria-label="What is brain dump?">?</button></div>
               <form id="brainDumpForm"><label class="sr-only" for="brainDumpInput">Add a thought</label><input id="brainDumpInput" maxlength="100" placeholder="Type it, press Enter"><button type="submit" aria-label="Add thought">＋</button></form>
-              <div class="brain-list" id="brainDumpList"></div>
+              <div class="brain-list" id="brainDumpList" tabindex="0" role="region" aria-label="Saved thoughts"></div>
               <small>Not money. Just yours.</small>
             <details class="daily-intention"><summary>One money intention</summary><div>
               <span class="eyebrow">ONE MONEY INTENTION</span>
@@ -252,7 +258,7 @@
                   <span id="selectedDayNumber">—</span>
                   <div><small>SELECTED DAY</small><strong id="selectedDayName">Nothing selected</strong></div>
                 </div>
-                <div class="day-events" id="dayEvents">
+                <div class="day-events" id="dayEvents" tabindex="0" role="region" aria-label="Selected day records">
                   <p class="empty-copy">Tap a date in the calendar.</p>
                 </div>
               <button class="ghost-button" id="calendarLogButton" type="button">Log spending or a no-spend day</button></article><article class="paper-card activity-card">
@@ -263,14 +269,14 @@
                 <button class="ghost-button" id="clearRegisterFilters" type="button">Clear</button>
               </div>
               <p class="filter-count" id="registerCount" role="status"></p>
-              <div class="activity-list" id="monthRegister"></div>
+              <div class="activity-list" id="monthRegister" tabindex="0" role="region" aria-label="Monthly spending records"></div>
             </article><article class="paper-card glance-card">
               <div class="card-heading"><div><span class="eyebrow">AT A GLANCE</span><h2>Where the month is going</h2></div><button class="help-dot" type="button" data-help-title="At a glance" data-help-text="These bars use only the spending saved in this browser for the selected month." aria-label="What is at a glance?">?</button></div>
               <div class="glance-total"><span>Logged spending</span><strong class="money" id="glanceSpent">$0</strong></div>
-              <div class="category-bars" id="monthCategoryBars"></div>
+              <div class="category-bars" id="monthCategoryBars" tabindex="0" role="region" aria-label="Spending categories"></div>
             </article><article class="paper-card monthly-notes-card">
             <div class="card-heading"><div><span class="eyebrow">A PLACE TO REMEMBER</span><h2 id="monthNotesHeading">Notes for this month</h2></div><span id="monthNoteCount" class="saved-label"></span></div>
-            <div class="monthly-notes-layout"><div class="note-composer"><label class="sr-only" for="monthNote">Write a monthly note</label><textarea id="monthNote" rows="5" maxlength="5000" placeholder="A reminder, a change of plan, or something worth remembering…"></textarea><div class="finance-actions"><button id="keepMonthNote" class="primary-button" type="button">Keep this note</button><button id="cancelMonthNoteEdit" type="button" hidden>Cancel edit</button><span id="noteSaved" class="saved-label">Draft saved</span></div><p class="finance-hint">Each kept note stays with this month. Notes never change your money totals.</p></div><div><span class="eyebrow">KEPT NOTES</span><div id="keptMonthNotes"></div></div></div>
+            <div class="monthly-notes-layout"><div class="note-composer"><label class="sr-only" for="monthNote">Write a monthly note</label><textarea id="monthNote" rows="5" maxlength="5000" placeholder="A reminder, a change of plan, or something worth remembering…"></textarea><div class="finance-actions"><button id="keepMonthNote" class="primary-button" type="button">Keep this note</button><button id="cancelMonthNoteEdit" type="button" hidden>Cancel edit</button><span id="noteSaved" class="saved-label">Draft saved</span></div><p class="finance-hint">Each kept note stays with this month. Notes never change your money totals.</p></div><div><span class="eyebrow">KEPT NOTES</span><div id="keptMonthNotes" tabindex="0" role="region" aria-label="Kept monthly notes"></div></div></div>
           </article></div></section><section class="view" id="view-insights" data-view-panel="insights"><div class="page-heading"><div><span class="eyebrow">THE BIGGER PICTURE</span><h1>Insights</h1><p>Patterns from your records. Choose a month to explore.</p></div><div class="month-controls"><button class="icon-button" type="button" data-month-step="-1" aria-label="Previous Insights month">←</button><label class="page-month-picker">Month<input type="month" data-browse-month aria-label="Insights month"></label><button class="icon-button" type="button" data-month-step="1" aria-label="Next Insights month">→</button><button type="button" class="month-chip" data-current-month>Today</button></div></div><div class="metric-strip">
             <article class="metric-card">
               <span>Money in</span><strong class="money" id="metricIncome">$0</strong><small>planned this month</small>
@@ -284,13 +290,7 @@
             <article class="metric-card featured">
               <span>Still yours</span><strong class="money" id="metricRemaining">$0</strong><small id="metricDaily">available for the month</small>
             </article>
-          </div><section id="monthInsights" class="money-insights" aria-label="Selected month visual overview"></section><article class="paper-card"><span class="eyebrow">YOUR SAVED RECORDS</span><h2>Savings & debt progress</h2><div id="insightsProgress" class="insights-progress"></div></article><div class="page-heading"><div><span class="eyebrow">AS OF TODAY</span><h2>Right now</h2><p>These guides use your device date, regardless of the month above.</p></div></div><div class="insights-today-grid"><article class="ink-card today-hero">
-              <div class="card-heading"><span class="eyebrow">TODAY’S BUDGET GUIDE</span><button class="help-dot light" type="button" data-help-title="Today’s budget guide" data-help-text="The current calendar month’s planned income minus bills, logged spending, goal deposits and debt payments, divided by the days left including today. Scheduled income may not have arrived yet. This is a budget estimate, not your available bank balance." aria-label="How is today’s budget guide worked out?">?</button></div>
-              <strong class="hero-money money" id="todaySafe">$0</strong>
-              <div class="today-money-context"><span><small>PLAN THROUGH</small><b id="todayPlanUntil"></b></span><span><small>MONTHLY PLAN LEFT</small><b class="money" id="todayPlanRemaining"></b></span></div>
-              <p id="todayFormula">Based on this month’s saved plan and activity.</p>
-              <details class="today-formula-help"><summary>How is this worked out?</summary><p>Planned monthly income minus bills, spending, savings set aside and debt payments, divided by the days left including today. It updates when you edit records. Scheduled income may not have arrived; this is not your bank balance.</p></details>
-              </article><article class="paper-card run-to-payday-card">
+          </div><section id="monthInsights" class="money-insights" aria-label="Selected month visual overview"></section><article class="paper-card"><span class="eyebrow">YOUR SAVED RECORDS</span><h2>Savings & debt progress</h2><div id="insightsProgress" class="insights-progress"></div></article><div class="page-heading"><div><span class="eyebrow">AS OF TODAY</span><h2>Right now</h2><p>These guides use your device date, regardless of the month above.</p></div></div><div class="insights-today-grid"><article class="paper-card run-to-payday-card">
               <div class="card-heading"><div><span class="eyebrow">RUN TO PAYDAY</span><h2 id="paydayRunTitle">Your next money landing</h2></div><strong id="paydayDaysLeft">—</strong></div>
               <div class="payday-run-track" aria-hidden="true"><i id="paydayRunBar"></i></div>
               <div class="payday-run-metrics">
@@ -655,10 +655,10 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button id="toastAction" type="button" hidden>Undo</button></div>
   <style id="printPageSize" media="print"></style>
-  <script src="finance.js?v=40"></script>
-  <script src="finance-report.js?v=40"></script>
-  <script src="finance-ui.js?v=40"></script>
-  <script src="english-dates.js?v=40"></script>
-  <script src="app.js?v=40"></script>
+  <script src="finance.js?v=41"></script>
+  <script src="finance-report.js?v=41"></script>
+  <script src="finance-ui.js?v=41"></script>
+  <script src="english-dates.js?v=41"></script>
+  <script src="app.js?v=41"></script>
 </body>
 </html>

@@ -1,3 +1,7 @@
+# v41 — September 9, 2026
+
+Restores the two-column desktop Today and Calendar layouts. Today has the Budget Guide and check-in on the left, quests and dated records on the right, with Perspective and Brain Dump below. Calendar has its month grid on the left, day/activity/glance on the right, and Notes below. Long lists scroll within their panels; phones stack the sections. All v40 features and stored data remain intact.
+
 # v40 — clearer daily planning
 
 Today now follows Daily Check-In, Three Small Things, Your Dated Records, and side-by-side Perspective / Brain Dump. No Spend Day is visible in daily capture and replaces the time control in quick capture. Calendar owns the month grid, selected day, activity, spending breakdown and monthly notes. Insights holds actual-record summaries, charts and progress. Wishlist provides a persistent 72-hour pause, editing, let-go/delete/Undo and a checked, single-entry purchase flow tied to a saved paycheck. Purchases require available plan remainder and user confirmation of cash.
